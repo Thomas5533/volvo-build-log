@@ -1,0 +1,1936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Project Car Build Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;500;600&amp;display=swap">
+<style id="app-style">
+:root {
+  /* Layout: hero (build name + race-number roundel) / summary strip / sticky section nav / six stacked sections */
+  --bg: #ECEFEF;
+  --surface: #F8FAFA;
+  --sunken: #E1E6E7;
+  --ink: #111518;
+  --muted: #56626A;
+  --line: #C9D1D4;
+  --accent: #F2C200;
+  --accent-ink: #111518;
+  --panel: #161B1E;
+  --danger: #B5342A;
+  --warn: #9E5C00;
+  --ok: #2B7550;
+  --slate: #4C6476;
+  --on-sem: #FFFFFF;
+  --focus: #2563EB;
+  --glow: none;
+  --font-display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "Archivo", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Martian Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --radius: 6px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1113; --surface: #161A1D; --sunken: #1F2428; --ink: #E6EAEC; --muted: #97A2A8; --line: #2B3236;
+    --accent: #F2C200; --accent-ink: #111518; --panel: #1C2226;
+    --danger: #EE6E5E; --warn: #E3A13E; --ok: #5CBF8B; --slate: #8FA7B9; --on-sem: #0E1113; --focus: #7AA7FF;
+    --glow: 0 0 10px rgba(242, 194, 0, .45);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1113; --surface: #161A1D; --sunken: #1F2428; --ink: #E6EAEC; --muted: #97A2A8; --line: #2B3236;
+  --accent: #F2C200; --accent-ink: #111518; --panel: #1C2226;
+  --danger: #EE6E5E; --warn: #E3A13E; --ok: #5CBF8B; --slate: #8FA7B9; --on-sem: #0E1113; --focus: #7AA7FF;
+  --glow: 0 0 10px rgba(242, 194, 0, .45);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
+body.no-scroll { overflow: hidden; }
+img { max-width: 100%; display: block; }
+svg { width: 1em; height: 1em; flex: none; }
+button { font: inherit; color: inherit; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+
+/* ---------- Hero ---------- */
+.hero { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 40px; align-items: center; padding: 44px 0 32px; }
+.eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 16px; }
+.build-name { font-family: var(--font-display); font-style: italic; font-weight: 900; font-stretch: 125%; text-transform: uppercase; font-size: clamp(2.6rem, 6.2vw, 5.25rem); line-height: .92; letter-spacing: -.015em; margin: 0; text-wrap: balance; overflow-wrap: anywhere; }
+.car-line { font-family: var(--font-display); font-weight: 600; font-stretch: 110%; font-size: 1.25rem; margin: 16px 0 0; }
+.car-line.placeholder { color: var(--muted); font-weight: 500; }
+.about { color: var(--muted); max-width: 58ch; margin: 10px 0 0; }
+.hero-actions { margin-top: 22px; display: flex; gap: 10px; flex-wrap: wrap; }
+.hero-visual { position: relative; aspect-ratio: 5 / 4; border-radius: 8px; overflow: hidden; background: var(--panel); isolation: isolate; container-type: inline-size; }
+.stripes { position: absolute; inset: 0; background: linear-gradient(112deg, transparent 0 36%, var(--accent) 36% 49%, transparent 49% 53%, var(--accent) 53% 58%, transparent 58%); }
+.hero-visual .cover { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.hero-visual .cover.broken { display: none; }
+.roundel { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 52%; aspect-ratio: 1; border-radius: 50%; background: #FAFAF7; color: #111518; display: grid; place-items: center; box-shadow: inset 0 0 0 5px #111518, inset 0 0 0 9px #FAFAF7, 0 10px 30px rgba(0, 0, 0, .35); }
+.roundel span { font-family: var(--font-display); font-weight: 900; font-stretch: 88%; line-height: 1; font-size: 5rem; font-size: 25cqi; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.roundel.len-3 span { font-size: 17cqi; }
+.roundel.len-4 span { font-size: 13cqi; }
+.roundel.unset span { color: #A9B2B6; }
+.has-cover .roundel { left: auto; top: auto; right: 16px; bottom: 16px; transform: none; width: 22%; box-shadow: inset 0 0 0 3px #111518, inset 0 0 0 5px #FAFAF7, 0 6px 18px rgba(0, 0, 0, .4); }
+.has-cover .roundel span { font-size: 10.5cqi; }
+.has-cover .roundel.len-3 span { font-size: 7.5cqi; }
+.has-cover .roundel.len-4 span { font-size: 5.6cqi; }
+
+/* ---------- Banner ---------- */
+.banner { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: 20px; padding: 12px 16px; border: 1px solid var(--line); background: var(--surface); border-radius: var(--radius); font-size: 14px; }
+.banner p { margin: 0; max-width: 70ch; }
+
+/* ---------- Summary strip ---------- */
+.dash { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.dash a { display: flex; flex-direction: column; gap: 2px; padding: 14px 16px 15px; background: var(--surface); text-decoration: none; min-width: 0; }
+.dash a:hover { background: var(--sunken); }
+.dash .k { font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.dash .v { font-family: var(--font-display); font-weight: 800; font-stretch: 125%; font-size: 1.6rem; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.dash .s { font-size: 12.5px; color: var(--muted); line-height: 1.35; overflow-wrap: anywhere; }
+.bad { color: var(--danger); font-weight: 600; }
+@media (max-width: 920px) { .dash { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .dash { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ---------- Section nav ---------- */
+.secnav { position: sticky; top: 0; z-index: 20; margin-top: 32px; background: var(--bg); background: color-mix(in srgb, var(--bg) 90%, transparent); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.secnav-inner { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; max-width: 1120px; margin: 0 auto; padding: 0 14px; }
+.secnav-inner::-webkit-scrollbar { display: none; }
+.secnav a { flex: none; display: flex; align-items: center; gap: 7px; padding: 14px 8px 11px; text-decoration: none; font-family: var(--font-mono); font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); border-bottom: 3px solid transparent; }
+.secnav a:hover { color: var(--ink); }
+.secnav a[aria-current="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.secnav .count { font-size: 10px; padding: 1px 6px; border-radius: 99px; background: var(--sunken); color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* ---------- Sections ---------- */
+.sec { padding: 56px 0 8px; scroll-margin-top: 52px; }
+.sec.dragging { outline: 2px dashed var(--accent); outline-offset: 8px; border-radius: 4px; }
+.sec-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.sec h2 { font-family: var(--font-display); font-weight: 800; font-stretch: 125%; text-transform: uppercase; font-size: clamp(1.35rem, 2.6vw, 1.75rem); line-height: 1.1; margin: 0; display: flex; align-items: center; gap: 12px; text-wrap: balance; }
+.sec h2::before { content: ""; flex: none; width: 12px; height: .85em; background: var(--accent); transform: skewX(-20deg); }
+.sec-meta { margin: 6px 0 0; color: var(--muted); font-size: 13.5px; }
+.sec-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.sub { font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; font-weight: 500; }
+.mini-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+.notes { margin: 4px 0 0; color: var(--muted); font-size: 14px; max-width: 65ch; overflow-wrap: anywhere; }
+.meta-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+.empty { border: 1.5px dashed var(--line); border-radius: var(--radius); padding: 26px 24px; color: var(--muted); }
+.empty p { margin: 0; max-width: 60ch; }
+.empty-inline { color: var(--muted); font-size: 14px; margin: 8px 0 0; }
+.none { color: var(--muted); font-size: 13px; }
+.tag { display: inline-block; vertical-align: 3px; margin-left: 9px; padding: 1px 6px; border-radius: 3px; border: 1px dashed var(--muted); color: var(--muted); font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .06em; text-transform: uppercase; font-weight: 500; font-style: normal; line-height: 1.4; }
+
+/* ---------- Buttons ---------- */
+.btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px; border-radius: 4px; border: 1px solid var(--line); background: var(--surface); font-weight: 600; font-size: 13.5px; cursor: pointer; text-decoration: none; line-height: 1.2; white-space: nowrap; }
+.btn:hover { border-color: var(--ink); }
+.btn svg { width: 14px; height: 14px; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn-primary:hover { border-color: var(--accent-ink); }
+.btn-small { padding: 5px 10px; font-size: 12.5px; }
+.btn-danger { color: var(--danger); }
+.btn-danger:hover { border-color: var(--danger); }
+.btn-danger-solid { background: var(--danger); border-color: var(--danger); color: var(--on-sem); }
+.icon-btn { display: inline-grid; place-items: center; width: 32px; height: 32px; padding: 0; border-radius: 4px; border: 1px solid transparent; background: transparent; color: var(--muted); cursor: pointer; flex: none; }
+.icon-btn:hover { border-color: var(--line); color: var(--ink); background: var(--surface); }
+.icon-btn svg { width: 15px; height: 15px; }
+.link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink); text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; overflow-wrap: anywhere; }
+.link:hover { text-decoration-color: var(--ink); }
+.link svg { width: 12px; height: 12px; }
+.cost { font-family: var(--font-mono); font-size: 12px; font-variant-numeric: tabular-nums; }
+
+/* ---------- Designators ---------- */
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; background: var(--surface); max-width: 100%; }
+.seg > button, .seg > label { position: relative; display: inline-flex; align-items: center; gap: 6px; padding: 6px 9px; margin: 0; border: 0; border-left: 1px solid var(--line); background: transparent; font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; letter-spacing: .03em; text-transform: uppercase; color: var(--muted); cursor: pointer; line-height: 1.2; }
+.seg > :first-child { border-left: 0; }
+.seg > button:hover, .seg > label:hover { color: var(--ink); background: var(--sunken); }
+.seg svg { width: 12px; height: 12px; }
+.seg .bars { width: 13px; height: 11px; }
+.seg > [aria-pressed="true"], .seg > label:has(input:checked) { background: var(--ink); color: var(--bg); }
+.seg-importance > .v-high[aria-pressed="true"], .seg-importance > label.v-high:has(input:checked) { background: var(--danger); color: var(--on-sem); }
+.seg-importance > .v-medium[aria-pressed="true"], .seg-importance > label.v-medium:has(input:checked) { background: var(--warn); color: var(--on-sem); }
+.seg-importance > .v-low[aria-pressed="true"], .seg-importance > label.v-low:has(input:checked) { background: var(--slate); color: var(--on-sem); }
+.seg-form input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.seg > label:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: -2px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 3px; font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; letter-spacing: .03em; text-transform: uppercase; border: 1px solid var(--line); background: var(--surface); color: var(--ink); white-space: nowrap; }
+.chip svg { width: 12px; height: 12px; }
+.chip .bars { width: 13px; height: 11px; }
+.chip-importance.v-high { color: var(--danger); border-color: var(--danger); }
+.chip-importance.v-medium { color: var(--warn); border-color: var(--warn); }
+.chip-importance.v-low { color: var(--slate); border-color: var(--slate); }
+
+/* ---------- Installed parts ---------- */
+.filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.filter { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: transparent; border-radius: 99px; padding: 5px 12px; font-size: 12.5px; cursor: pointer; color: var(--muted); }
+.filter:hover { color: var(--ink); border-color: var(--ink); }
+.filter svg { width: 12px; height: 12px; }
+.filter[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.filter .n { font-family: var(--font-mono); font-size: 10.5px; opacity: .7; }
+.parts-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.part { display: grid; grid-template-columns: 76px minmax(0, 1fr) auto auto; gap: 18px; align-items: start; padding: 18px 0; border-bottom: 1px solid var(--line); }
+.part-date { display: flex; flex-direction: column; font-family: var(--font-mono); line-height: 1.15; padding-top: 2px; }
+.part-date .m, .part-date .y { font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.part-date .d { font-family: var(--font-display); font-weight: 800; font-stretch: 125%; font-size: 1.55rem; font-variant-numeric: tabular-nums; }
+.part-name { font-size: 1.05rem; font-weight: 700; margin: 0; line-height: 1.3; }
+.part-rating { padding-top: 2px; }
+@media (max-width: 760px) {
+  .part { grid-template-columns: 58px minmax(0, 1fr) auto; gap: 10px 14px; }
+  .part-rating { grid-column: 2 / -1; grid-row: 2; }
+}
+
+/* ---------- Races ---------- */
+.races { display: grid; gap: 12px; margin-bottom: 28px; }
+.race { position: relative; display: grid; grid-template-columns: 100px minmax(0, 1fr) auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.race-date { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px 8px; border-right: 2px dashed var(--line); text-align: center; border-radius: var(--radius) 0 0 var(--radius); }
+.race-date::before, .race-date::after { content: ""; position: absolute; right: -9px; width: 16px; height: 16px; border-radius: 50%; background: var(--bg); border: 1px solid var(--line); }
+.race-date::before { top: -9px; clip-path: inset(50% 0 0 0); }
+.race-date::after { bottom: -9px; clip-path: inset(0 0 50% 0); }
+.race.upcoming .race-date { background: var(--accent); color: var(--accent-ink); border-right-color: rgba(17, 21, 24, .35); }
+.race-date .mon { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; }
+.race-date .day { font-family: var(--font-display); font-weight: 900; font-stretch: 125%; font-size: 2.3rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.race-date .yr { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .06em; margin-top: 5px; }
+.race-body { padding: 16px 18px; min-width: 0; }
+.race-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.race h3 { margin: 0; font-size: 1.1rem; font-weight: 700; line-height: 1.3; }
+.countdown { font-family: var(--font-mono); font-size: 10px; letter-spacing: .05em; text-transform: uppercase; padding: 2px 7px; border-radius: 3px; background: var(--sunken); color: var(--ink); }
+.loc { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 14px; margin: 4px 0 0; }
+.loc svg { width: 13px; height: 13px; }
+.people-row { display: flex; gap: 10px; align-items: baseline; margin-top: 10px; }
+.people-row .lbl { font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); width: 78px; flex: none; }
+.people { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
+.person { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px 2px 2px; border-radius: 99px; background: var(--sunken); font-size: 13px; }
+.result { margin: 12px 0 0; font-size: 14px; border-left: 3px solid var(--accent); padding-left: 10px; max-width: 65ch; }
+.race-edit { padding: 10px 10px 0 0; }
+@media (max-width: 600px) {
+  .race { grid-template-columns: 74px minmax(0, 1fr); }
+  .race-edit { position: absolute; top: 6px; right: 6px; padding: 0; }
+  .race-top { padding-right: 30px; }
+  .race-date .day { font-size: 1.8rem; }
+  .people-row { flex-direction: column; gap: 4px; }
+}
+
+/* ---------- Avatars ---------- */
+.av { display: inline-grid; place-items: center; border-radius: 50%; background: var(--c, #55606A); color: #fff; font-weight: 700; flex: none; letter-spacing: .02em; }
+.av.sm { width: 22px; height: 22px; font-size: 9px; }
+.av.lg { width: 52px; height: 52px; font-size: 17px; font-stretch: 112%; }
+.av.guest { background: var(--muted); color: var(--bg); }
+.c0 { --c: #2F5D7C; } .c1 { --c: #8A3B2E; } .c2 { --c: #3D6A39; } .c3 { --c: #5E4A8A; }
+.c4 { --c: #8A5A1F; } .c5 { --c: #24706A; } .c6 { --c: #7D3557; } .c7 { --c: #4B5563; }
+
+/* ---------- Maintenance ---------- */
+.mt-list { display: grid; gap: 10px; }
+.mt { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; background: var(--surface); border: 1px solid var(--line); border-left: 5px solid var(--line); border-radius: var(--radius); padding: 16px 18px; }
+.mt.overdue { border-left-color: var(--danger); }
+.mt.soon { border-left-color: var(--warn); }
+.mt.ok { border-left-color: var(--ok); }
+.mt-head { display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; }
+.mt h3 { margin: 0; font-size: 1.05rem; font-weight: 700; line-height: 1.3; }
+.due { font-family: var(--font-mono); font-size: 11px; letter-spacing: .04em; text-transform: uppercase; margin: 8px 0 0; color: var(--muted); }
+.mt.overdue .due { color: var(--danger); font-weight: 600; }
+.mt.soon .due { color: var(--warn); font-weight: 600; }
+.mt-parts { margin-top: 14px; }
+.mt-parts ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.mt-parts li { display: flex; align-items: center; gap: 9px 12px; font-size: 14px; flex-wrap: wrap; }
+.tick { display: inline-grid; place-items: center; width: 20px; height: 20px; padding: 0; border: 1.5px solid var(--muted); border-radius: 3px; background: transparent; color: transparent; flex: none; }
+button.tick { cursor: pointer; }
+button.tick:hover { border-color: var(--ink); }
+.tick svg { width: 13px; height: 13px; }
+li.have .tick { background: var(--ok); border-color: var(--ok); color: #fff; }
+li.have .pname { color: var(--muted); }
+.mt-actions { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+.done { margin-top: 20px; border-top: 1px solid var(--line); padding-top: 14px; }
+.done summary { cursor: pointer; font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.done ul { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 8px; }
+.done li { display: flex; gap: 8px 14px; align-items: center; font-size: 14px; flex-wrap: wrap; }
+.done .when { font-family: var(--font-mono); font-size: 11px; color: var(--muted); min-width: 110px; }
+@media (max-width: 600px) { .mt { grid-template-columns: 1fr; } .mt-actions { flex-direction: row; align-items: center; justify-content: space-between; } }
+
+/* ---------- Future mods ---------- */
+.mods { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 14px; }
+.mod { display: flex; flex-direction: column; gap: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 16px 14px; min-width: 0; }
+.mod-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.mod-top .mini-label { margin: 0; }
+.mod-name { margin: 0; font-size: 1.12rem; font-weight: 700; line-height: 1.3; }
+.mod .meta-row { margin-top: 0; }
+.mod .notes { margin: 0; }
+.shift { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.led { display: flex; flex-direction: column; gap: 6px; align-items: stretch; text-align: left; background: transparent; border: 0; padding: 0; margin: 0; color: var(--muted); min-width: 0; }
+button.led { cursor: pointer; }
+.led-bar { display: block; height: 10px; border-radius: 2px; background: var(--sunken); border: 1px solid var(--line); }
+.led.lit .led-bar { background: var(--accent); border-color: rgba(17, 21, 24, .35); box-shadow: var(--glow); }
+.led.cur .led-label { color: var(--ink); font-weight: 700; }
+.led-label { font-size: 12px; font-stretch: 80%; line-height: 1.2; overflow-wrap: break-word; hyphens: auto; }
+button.led:hover .led-bar { border-color: var(--ink); }
+button.led:hover .led-label { color: var(--ink); }
+.mod-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: auto; padding-top: 12px; border-top: 1px dashed var(--line); }
+
+/* ---------- Photography ---------- */
+.drop { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: 100%; border: 1.5px dashed var(--line); border-radius: var(--radius); background: transparent; padding: 28px 20px; text-align: center; color: var(--muted); cursor: pointer; margin-bottom: 12px; font-size: 14px; }
+.drop:hover { border-color: var(--ink); color: var(--ink); }
+.drop svg { width: 22px; height: 22px; }
+.drop.compact { flex-direction: row; padding: 12px 16px; gap: 10px; }
+.drop.compact .hint { display: none; }
+.drop strong { color: var(--ink); }
+.roll { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+.tile { position: relative; aspect-ratio: 1; padding: 0; border: 0; border-radius: 3px; overflow: hidden; cursor: zoom-in; background: var(--sunken); }
+.tile::before { content: "Photo unavailable"; position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--font-mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.tile img { position: relative; width: 100%; height: 100%; object-fit: cover; background: var(--sunken); }
+@media (prefers-reduced-motion: no-preference) { .tile img { transition: transform .35s ease; } .tile:hover img { transform: scale(1.04); } }
+.tile img.broken { opacity: 0; }
+.cover-badge { position: absolute; left: 6px; top: 6px; padding: 2px 6px; border-radius: 3px; background: var(--accent); color: var(--accent-ink); font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .06em; text-transform: uppercase; font-weight: 600; }
+
+/* ---------- Contributors ---------- */
+.crew-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 12px; }
+.crew { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: start; background: var(--surface); border: 1px solid var(--line); border-top: 4px solid var(--c); border-radius: var(--radius); padding: 16px; }
+.crew h3 { margin: 0; font-size: 1.05rem; line-height: 1.3; }
+.role { margin: 3px 0 0; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.contact { font-size: 13.5px; margin: 8px 0 0; overflow-wrap: anywhere; }
+.crew-stats { margin: 10px 0 0; font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); letter-spacing: .03em; }
+
+/* ---------- Footer ---------- */
+.foot { margin-top: 72px; padding-top: 22px; padding-bottom: 48px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+body.editing .foot { padding-bottom: 110px; }
+
+/* ---------- Status pill, toasts, lock ---------- */
+#status { position: fixed; right: 16px; bottom: 16px; z-index: 40; }
+.pill { display: flex; align-items: center; gap: 10px; padding: 6px 6px 6px 14px; border-radius: 99px; background: var(--ink); color: var(--bg); font-size: 12.5px; box-shadow: 0 8px 28px rgba(0, 0, 0, .22); }
+.pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); flex: none; }
+.pill.pending .dot, .pill.saving .dot { background: var(--accent); }
+.pill.error .dot { background: var(--danger); }
+.pill.preview .dot { background: var(--slate); }
+.pill button { background: rgba(127, 127, 127, .22); color: inherit; border: 0; border-radius: 99px; padding: 6px 11px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+.pill button:hover { background: rgba(127, 127, 127, .36); }
+.pill button.pill-primary { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+@media (max-width: 560px) { #status { left: 10px; right: 10px; bottom: 10px; } .pill { justify-content: space-between; } }
+#toasts { position: fixed; left: 50%; bottom: 76px; transform: translateX(-50%); z-index: 70; display: grid; gap: 8px; justify-items: center; pointer-events: none; width: max-content; max-width: calc(100vw - 24px); }
+.toast { background: var(--ink); color: var(--bg); padding: 9px 14px; border-radius: 6px; font-size: 13.5px; box-shadow: 0 8px 24px rgba(0, 0, 0, .25); max-width: 460px; }
+.toast.err { background: var(--danger); color: var(--on-sem); }
+#lock { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: rgba(127, 127, 127, .25); cursor: progress; }
+#lock[hidden] { display: none; }
+.lock-card { display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-radius: 6px; background: var(--ink); color: var(--bg); font-size: 14px; box-shadow: 0 10px 30px rgba(0, 0, 0, .3); }
+.spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spin { animation-duration: 2.4s; } }
+
+/* ---------- Dialogs and forms ---------- */
+dialog { border: 1px solid var(--line); border-radius: 8px; padding: 0; background: var(--surface); color: var(--ink); width: min(580px, calc(100vw - 24px)); max-height: calc(100vh - 32px); box-shadow: 0 24px 70px rgba(0, 0, 0, .35); }
+dialog::backdrop { background: rgba(10, 12, 14, .55); }
+#confirm { width: min(430px, calc(100vw - 24px)); }
+.modal-form { display: flex; flex-direction: column; max-height: calc(100vh - 34px); margin: 0; }
+.modal-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px 14px 20px; border-bottom: 1px solid var(--line); }
+.modal-head h2, .confirm-body h2 { margin: 0; font-family: var(--font-display); font-weight: 800; font-stretch: 125%; text-transform: uppercase; font-size: 1.05rem; line-height: 1.2; }
+.modal-body { padding: 18px 20px; overflow: auto; display: grid; gap: 16px; }
+.modal-foot { display: flex; align-items: center; gap: 8px; padding: 14px 20px; border-top: 1px solid var(--line); flex-wrap: wrap; }
+.spacer { flex: 1; }
+.confirm-body { padding: 20px 20px 6px; }
+.confirm-body p { color: var(--muted); margin: 8px 0 0; font-size: 14.5px; }
+#confirm .modal-foot { border-top: 0; }
+.field { display: grid; gap: 6px; border: 0; margin: 0; padding: 0; min-width: 0; }
+fieldset.field { display: block; }
+fieldset.field > legend { margin-bottom: 8px; }
+.field > label, .field > legend { font-size: 13px; font-weight: 600; padding: 0; }
+.opt { font-weight: 400; color: var(--muted); font-size: 12px; }
+.field input[type="text"], .field input[type="date"], .field textarea { width: 100%; padding: 9px 11px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); color: var(--ink); font: inherit; font-size: 14.5px; }
+.field textarea { min-height: 78px; resize: vertical; }
+.field input:focus, .field textarea:focus { outline: 2px solid var(--focus); outline-offset: -1px; }
+.hint { margin: 0; font-size: 12.5px; color: var(--muted); }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 520px) { .row2 { grid-template-columns: 1fr; } }
+.check { display: flex; gap: 8px; align-items: center; font-size: 14px; }
+.pick { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.pick-chip { position: relative; display: inline-flex; align-items: center; gap: 6px; padding: 3px 11px 3px 3px; border: 1px solid var(--line); border-radius: 99px; cursor: pointer; font-size: 13px; }
+.pick-chip input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.pick-chip:hover { border-color: var(--ink); }
+.pick-chip:has(input:checked) { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.pick-chip:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 2px; }
+.others { display: flex; flex-wrap: wrap; gap: 6px; }
+.others:not(:empty) { margin-bottom: 10px; }
+.other-chip { display: inline-flex; align-items: center; gap: 2px; padding: 3px 3px 3px 11px; border-radius: 99px; background: var(--sunken); font-size: 13px; }
+.other-chip button { display: inline-grid; place-items: center; border: 0; background: transparent; cursor: pointer; width: 22px; height: 22px; border-radius: 50%; color: var(--muted); padding: 0; }
+.other-chip button:hover { color: var(--ink); background: var(--line); }
+.other-chip svg { width: 11px; height: 11px; }
+.add-other { display: flex; gap: 8px; }
+.add-other input { flex: 1; min-width: 0; }
+.parts-editor { display: grid; gap: 8px; margin-bottom: 10px; }
+.parts-editor:empty { display: none; }
+.part-row { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto auto; gap: 8px; align-items: center; }
+.part-row input[type="text"] { padding: 7px 9px; font-size: 14px; }
+.pr-have { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; white-space: nowrap; }
+@media (max-width: 520px) { .part-row { grid-template-columns: minmax(0, 1fr) auto; } .pr-link { grid-column: 1; grid-row: 2; } .pr-have { grid-column: 2; grid-row: 2; } }
+
+/* ---------- Lightbox ---------- */
+#lightbox { position: fixed; inset: 0; z-index: 50; }
+#lightbox[hidden] { display: none; }
+.lb { position: absolute; inset: 0; background: rgba(8, 10, 11, .96); color: #EEF1F2; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
+.lb-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; }
+.lb-count { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; font-variant-numeric: tabular-nums; }
+.lb-tools, .lb-owner { display: flex; gap: 8px; flex-wrap: wrap; }
+.lb-btn { display: inline-flex; align-items: center; gap: 7px; padding: 7px 12px; border-radius: 4px; border: 1px solid rgba(255, 255, 255, .22); background: transparent; color: inherit; font-size: 13px; cursor: pointer; }
+.lb-btn:hover { border-color: rgba(255, 255, 255, .6); }
+.lb-btn[disabled] { opacity: .55; cursor: default; }
+.lb-btn svg { width: 14px; height: 14px; }
+.lb-btn.danger { color: #FF8F80; }
+.lb-stage { margin: 0; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 72px; }
+.lb-stage img { max-width: 100%; max-height: calc(100vh - 190px); object-fit: contain; border-radius: 2px; }
+.lb-stage figcaption { padding: 14px 0 4px; text-align: center; font-size: 14.5px; display: flex; gap: 6px 14px; align-items: baseline; justify-content: center; flex-wrap: wrap; max-width: 70ch; }
+.lb-date { font-family: var(--font-mono); font-size: 11px; opacity: .6; }
+.lb-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 48px; height: 48px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .25); background: rgba(0, 0, 0, .4); color: #fff; display: grid; place-items: center; cursor: pointer; padding: 0; }
+.lb-nav:hover { border-color: rgba(255, 255, 255, .7); }
+.lb-nav.prev { left: 12px; }
+.lb-nav.next { right: 12px; }
+.lb-nav svg { width: 18px; height: 18px; }
+.lb-owner { justify-content: center; padding: 10px 16px 18px; }
+@media (max-width: 640px) { .lb-stage { padding: 0 8px; } .lb-nav { top: auto; bottom: 74px; transform: none; width: 42px; height: 42px; } }
+
+@media (max-width: 820px) {
+  .hero { grid-template-columns: 1fr; gap: 24px; padding-top: 28px; }
+  .hero-visual { aspect-ratio: 16 / 9; }
+  .hero-visual:not(.has-cover) .roundel { width: 46%; }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<dialog id="modal" aria-labelledby="modal-title"></dialog>
+<dialog id="confirm" aria-labelledby="confirm-title"></dialog>
+<div id="lightbox" hidden></div>
+<div id="status"></div>
+<div id="toasts" aria-live="polite"></div>
+<div id="lock" hidden></div>
+<script id="build-data" type="application/json">{"version":1,"updatedAt":"2026-11-11T06:27:05.828Z","assetBase":"","car":{"name":"Volvo Project","model":"1989 Volvo 240 DL","number":"217","about":"","coverPhotoId":""},"installed":[{"id":"t1ybvilfqt0","name":"Space lift","link":"","date":"2026-06-12","cost":500,"rating":"practical","notes":"1\" gain in the front and 2' gain in the rear"},{"id":"6wwqqbcs276","name":"Turbo cam","link":"https://www.ipdusa.com/products/6214/HD-Turbo-Performance-Camshaft-for-Volvo-IPD-109328","date":"2025-12-01","cost":300,"rating":"performance","notes":""},{"id":"0foybt3vpuh","name":"740 Turbo kit","link":"","date":"2021-07-16","cost":250,"rating":"performance","notes":""},{"id":"chbvldkz2pa","name":"240 wing","link":"","date":"2021-07-22","cost":200,"rating":"stylish","notes":""},{"id":"mz4tl5g02qi","name":"IPD skid plate","link":"https://www.ipdusa.com/products/5197/Aluminum-Skid-Plate-240-IPD-106365-Volvo-1254390-1382407","date":"2020-10-01","cost":350,"rating":"classification","notes":""}],"future":[{"id":"ex-f1","name":"Double brake adapter","link":"https://www.anderssonsteelspeed.se/en/produkter/bromsadapterkit-adapter-dubbla-bromsok-volvo-240-740-940-bak-en-translation/","progress":"planned","importance":"low","cost":300,"notes":"Add brake calipers for handbrake"},{"id":"ex-f2","name":"Limited-slip differential","link":"https://example.com/lsd","progress":"theoretical","importance":"low","cost":2000,"notes":""},{"id":"ex-f3","name":"Oil cooler","link":"https://www.ebay.com/itm/115821257638","progress":"planned","importance":"medium","cost":320,"notes":""},{"id":"oqr7aej0lxo","name":"Hood pins","link":"","progress":"awaiting","importance":"high","cost":200,"notes":""},{"id":"2e59p922bc3","name":"Wide band exhaust gauge","link":"","progress":"awaiting","importance":"medium","cost":50,"notes":"Run through dash and hook up to power"},{"id":"nc5p2yb2ubu","name":"Boost adjuster","link":"","progress":"awaiting","importance":"medium","cost":25,"notes":""},{"id":"f79x7sn70ue","name":"Mud flaps","link":"https://www.speedwaymotors.com/Colored-Plastic-HDPE-Sheet-10-Ft-Rolled-1-8-Inch-Thick,1557.html?srsltid=AYCX9vIBt4O1ynNxSHHiV5k7mL9cefoStj2_Sfk-RLTJVJAHxppZMOL4","progress":"planned","importance":"medium","cost":30,"notes":""},{"id":"s0h8yzidod9","name":"Extend brake lines","link":"","progress":"planned","importance":"medium","cost":25,"notes":""},{"id":"mc3xfcej888","name":"E-fan signal light","link":"","progress":"planned","importance":"high","cost":20,"notes":""},{"id":"lr3vjkblmos","name":"Upgraded fuel pump","link":"","progress":"planned","importance":"low","cost":"","notes":""},{"id":"gh829exra2l","name":"Bucket seats","link":"","progress":"theoretical","importance":"low","cost":3000,"notes":""},{"id":"bp7kd4is6iq","name":"Roll cage","link":"","progress":"theoretical","importance":"low","cost":7500,"notes":"Hand made by skeet shooting friend"},{"id":"79hu0mexgvz","name":"Oil temp gauge","link":"","progress":"planned","importance":"medium","cost":50,"notes":""},{"id":"uj308ok8ea8","name":"Skid plate","link":"https://buyplastic.com/hdpe-plastic-sheet/?searchuuid=f061c8ee-f9cc-4568-87e4-e93f0e70dbb2&search_query=hdpe+sheet","progress":"planned","importance":"medium","cost":250,"notes":""},{"id":"1uy2e11l2hw","name":"Rally Livery","link":"https://i.pinimg.com/736x/05/86/9c/05869c763498ed5875764ed0236ecab7.jpg","progress":"theoretical","importance":"low","cost":1000,"notes":""}],"maintenance":[{"id":"ex-m1","title":"Oil and filter change","importance":"low","deadline":"2026-12-14","parts":[{"id":"ex-p1","name":"10W-30 synthetic, 5 qt","link":"","have":true}],"notes":"Change after every event","doneOn":""},{"id":"ex-m2","title":"Brake fluid flush","importance":"high","deadline":"2026-12-14","parts":[],"notes":"","doneOn":""},{"id":"ex-m3","title":"Rear trunk springs","importance":"low","deadline":"","parts":[],"notes":"Buy springs from Stan's","doneOn":""},{"id":"sljo27aqfmh","doneOn":"","title":"New helmets","deadline":"2027-02-01","importance":"high","parts":[],"notes":"current helmets expire 2026"},{"id":"4bnwkpd0mg6","doneOn":"","title":"Gas tank vent","deadline":"","importance":"medium","parts":[],"notes":""}],"races":[{"id":"rklm3053zdg","name":"Lind 2026 Season Finale","location":"Lind Lion's Club","date":"2026-10-04","racerIds":["ex-c1","ex-c3"],"racerNames":[],"attendeeIds":["ex-c2","35g2xd0vcks"],"attendeeNames":[],"result":"https://timemycar.muki.gg/event/01a0e462-b5f5-75e3-8345-840193404458/scoreboard"},{"id":"fj2svqncqad","name":"2026 Rallycross Fest","location":"Dirtfish","date":"2026-07-26","racerIds":["ex-c1","ex-c2"],"racerNames":[],"attendeeIds":["aqnd48dw2pd"],"attendeeNames":[],"result":"https://timemycar.muki.gg/event/019f8254-4587-7c91-9d09-38c9e084baa0/scoreboard"},{"id":"a8qvvfcardj","name":"2020 Winter Series 1","location":"Dirtfish","date":"2020-11-07","racerIds":["ex-c1","ex-c2"],"racerNames":[],"attendeeIds":[],"attendeeNames":[],"result":""},{"id":"cr72qh4bt38","name":"2020 Winter Series 3","location":"Dirtfish","date":"2021-01-09","racerIds":["ex-c1","ex-c2"],"racerNames":[],"attendeeIds":[],"attendeeNames":[],"result":""},{"id":"e3yegzyny7b","name":"2020 Winter Series 4","location":"Dirtfish","date":"2021-02-07","racerIds":["ex-c1","ex-c2"],"racerNames":[],"attendeeIds":[],"attendeeNames":[],"result":""},{"id":"n544lelqft4","name":"Lind 2021","location":"Lind Lion's Club","date":"2021-05-01","racerIds":["ex-c1","ex-c2"],"racerNames":[],"attendeeIds":[],"attendeeNames":[],"result":""},{"id":"n9fi8vqty2m","name":"2021 Rally Cross Fest","location":"Dirtfish","date":"2021-07-24","racerIds":["ex-c1","ex-c2"],"racerNames":[],"attendeeIds":["aqnd48dw2pd"],"attendeeNames":[],"result":""},{"id":"0d9cuxezt76","name":"2021 Rainier Rumble","location":"Enumclaw","date":"2021-09-26","racerIds":["ex-c1","ex-c2"],"racerNames":[],"attendeeIds":["aqnd48dw2pd"],"attendeeNames":[],"result":"https://static1.squarespace.com/static/5bb41955fb22a56aad39c91f/t/615202778006c011af7b4f19/1632764550327/Rainier+Rumble+2021+Scores.pdf"},{"id":"m65llf21nkz","name":"2022 Winter Race","location":"Dirtfish","date":"2022-01-15","racerIds":["ex-c1","ex-c2"],"racerNames":[],"attendeeIds":["aqnd48dw2pd"],"attendeeNames":[],"result":""},{"id":"ygt475g3v3k","name":"Lind 2022","location":"Lind Lion's Club","date":"2022-03-06","racerIds":["ex-c1","ex-c2"],"racerNames":[],"attendeeIds":[],"attendeeNames":[],"result":""},{"id":"912eivuetl5","name":"Lind 2027 Season Opener","location":"Lind Lion's Club","date":"2027-03-06","racerIds":["ex-c1","ex-c3"],"racerNames":[],"attendeeIds":["ex-c2"],"attendeeNames":[],"result":""}],"photos":[],"contributors":[{"id":"ex-c1","name":"Nico Dietzman","role":"Driver, Mechanic","contact":"","notes":"Seat time at every event."},{"id":"ex-c2","name":"Daniel Dietzman","role":"Driver, Mechanic","contact":"","notes":""},{"id":"ex-c3","name":"Michele Dietzman","role":"Driver, Mechanic","contact":"","notes":""},{"id":"35g2xd0vcks","name":"Maalek Getchell","role":"Co-driver","contact":"","notes":""},{"id":"aqnd48dw2pd","name":"Eli Tedrow","role":"Pit crew, Mechanic","contact":"","notes":""}]}</script>
+<script id="app-script">
+(function () {
+  'use strict';
+
+  /* The page saves itself: on every change it rebuilds this exact document with the
+     new data embedded, then publishes it as the artifact's next version. */
+  var TITLE = 'Project Car Build Log';
+  var HEAD = [
+    '<meta charset="utf-8">',
+    '<meta name="viewport" content="width=device-width, initial-scale=1">',
+    '<title>' + TITLE + '</title>',
+    '<link rel="preconnect" href="https://fonts.googleapis.com">',
+    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>',
+    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&amp;display=swap">',
+    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;500;600&amp;display=swap">'
+  ].join('\n');
+  var SHELL = [
+    '<div id="app"></div>',
+    '<dialog id="modal" aria-labelledby="modal-title"></dialog>',
+    '<dialog id="confirm" aria-labelledby="confirm-title"></dialog>',
+    '<div id="lightbox" hidden></div>',
+    '<div id="status"></div>',
+    '<div id="toasts" aria-live="polite"></div>',
+    '<div id="lock" hidden></div>'
+  ].join('\n');
+  var END_SCRIPT = '</scr' + 'ipt>';
+  var STASH_KEY = 'car-build-log:view';
+
+  var PROGRESS = [
+    { key: 'theoretical', label: 'Theoretical' },
+    { key: 'planned', label: 'Planned' },
+    { key: 'ordered', label: 'Ordered' },
+    { key: 'awaiting', label: 'Awaiting installation' }
+  ];
+  var IMPORTANCE = [
+    { key: 'high', label: 'High' },
+    { key: 'medium', label: 'Medium' },
+    { key: 'low', label: 'Low' }
+  ];
+  var RATINGS = [
+    { key: 'stylish', label: 'Stylish' },
+    { key: 'practical', label: 'Practical' },
+    { key: 'classification', label: 'Classification' },
+    { key: 'performance', label: 'Performance' }
+  ];
+  var SECTIONS = [
+    { id: 'installed', label: 'Installed parts' },
+    { id: 'races', label: 'Races' },
+    { id: 'maintenance', label: 'Maintenance' },
+    { id: 'future', label: 'Future mods' },
+    { id: 'photos', label: 'Photography' },
+    { id: 'contributors', label: 'Contributors' }
+  ];
+  var ROLES = ['Driver', 'Co-driver', 'Mechanic', 'Fabricator', 'Tuner', 'Photographer', 'Pit crew', 'Spotter', 'Sponsor'];
+  var ACCEPTED = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+
+  function svg(inner) { return '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">' + inner + '</svg>'; }
+  var S = 'fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"';
+  var ICON = {
+    stylish: svg('<path d="M8 1.5l1.6 4.9 4.9 1.6-4.9 1.6L8 14.5 6.4 9.6 1.5 8l4.9-1.6z" fill="currentColor"/>'),
+    practical: svg('<path ' + S + ' d="M10.6 1.9a3.4 3.4 0 0 0-3.2 4.5L2.3 11.5a1.4 1.4 0 0 0 2 2l5.1-5.1a3.4 3.4 0 0 0 4.5-3.2l-1.9 1.9-2-.6-.6-2z"/>'),
+    classification: svg('<path ' + S + ' d="M3.5 14.5V2"/><path ' + S + ' d="M3.5 2.5h9.5l-2.2 3 2.2 3H3.5"/>'),
+    performance: svg('<path ' + S + ' d="M1.8 11.5a6.2 6.2 0 1 1 12.4 0"/><path ' + S + ' d="M8 11.5l3.2-4"/>'),
+    link: svg('<path ' + S + ' d="M6.5 3H3v10h10V9.5M9.5 2.5h4v4M13.5 2.5L7.5 8.5"/>'),
+    pin: svg('<path ' + S + ' d="M8 14.8s4.8-4.4 4.8-8.2a4.8 4.8 0 0 0-9.6 0c0 3.8 4.8 8.2 4.8 8.2z"/><circle cx="8" cy="6.6" r="1.7" fill="currentColor"/>'),
+    edit: svg('<path ' + S + ' d="M11 2.4l2.6 2.6-7.8 7.8-3.3.7.7-3.3z"/>'),
+    plus: svg('<path ' + S + ' stroke-width="1.8" d="M8 3v10M3 8h10"/>'),
+    close: svg('<path ' + S + ' stroke-width="1.8" d="M3.5 3.5l9 9M12.5 3.5l-9 9"/>'),
+    prev: svg('<path ' + S + ' stroke-width="1.9" d="M10 3L5 8l5 5"/>'),
+    next: svg('<path ' + S + ' stroke-width="1.9" d="M6 3l5 5-5 5"/>'),
+    play: svg('<path d="M4.5 2.5v11l9-5.5z" fill="currentColor"/>'),
+    pause: svg('<path d="M4 2.5h3v11H4zM9 2.5h3v11H9z" fill="currentColor"/>'),
+    check: svg('<path ' + S + ' stroke-width="2" d="M3 8.5l3 3 7-7"/>'),
+    trash: svg('<path ' + S + ' d="M2.8 4.5h10.4M6.3 4.5V2.8h3.4v1.7M4.3 4.5l.7 9h6l.7-9"/>'),
+    upload: svg('<path ' + S + ' d="M8 10.5V2.5M4.6 5.8L8 2.5l3.4 3.3M2.5 10.5v3h11v-3"/>'),
+    camera: svg('<path ' + S + ' d="M1.8 5.2h3l1.2-2h4l1.2 2h3v8H1.8z"/><circle cx="8" cy="9" r="2.3" ' + S + '/>')
+  };
+  function bars(level) {
+    var n = { high: 3, medium: 2, low: 1 }[level] || 0;
+    var out = '';
+    for (var i = 0; i < 3; i++) {
+      out += '<rect x="' + (i * 5) + '" y="' + (8 - i * 4) + '" width="3.4" height="' + (4 + i * 4) + '" rx=".6" fill="currentColor" opacity="' + (i < n ? 1 : 0.28) + '"/>';
+    }
+    return '<svg class="bars" viewBox="0 0 14 12" aria-hidden="true" focusable="false">' + out + '</svg>';
+  }
+
+  /* ---------- Utilities ---------- */
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function uid() { return Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4); }
+  function isISO(s) { return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s); }
+  function todayISO() { var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function toUTC(iso) { var p = iso.split('-').map(Number); return Date.UTC(p[0], p[1] - 1, p[2]); }
+  function daysUntil(iso) { return Math.round((toUTC(iso) - toUTC(todayISO())) / 86400000); }
+  function localDate(iso) { var p = iso.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); }
+  function fmtDate(iso, opts) {
+    if (!isISO(iso)) return '';
+    return localDate(iso).toLocaleDateString('en-US', opts || { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+  function dateParts(iso) {
+    var dt = localDate(iso);
+    return {
+      mon: dt.toLocaleDateString('en-US', { month: 'short' }).toUpperCase(),
+      day: dt.getDate(),
+      year: dt.getFullYear(),
+      wd: dt.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase()
+    };
+  }
+  function relDay(n) {
+    if (n === 0) return 'today';
+    if (n === 1) return 'tomorrow';
+    if (n === -1) return 'yesterday';
+    return n > 0 ? 'in ' + n + ' days' : (-n) + ' days ago';
+  }
+  function plural(n, w, pl) { return n + ' ' + (n === 1 ? w : (pl || w + 's')); }
+  function num(v) { return typeof v === 'number' && isFinite(v) ? v : 0; }
+  function money(v) {
+    if (typeof v !== 'number' || !isFinite(v)) return '';
+    var frac = v % 1 ? 2 : 0;
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: frac, maximumFractionDigits: frac }).format(v);
+  }
+  function parseCost(s) {
+    s = String(s || '').replace(/[^0-9.]/g, '');
+    if (!s) return '';
+    var n = parseFloat(s);
+    return isFinite(n) ? Math.round(n * 100) / 100 : '';
+  }
+  function costInput(v) { return typeof v === 'number' && isFinite(v) ? String(v) : ''; }
+  function safeUrl(u) {
+    u = String(u || '').trim();
+    if (!u || /\s/.test(u)) return '';
+    if (!/^[a-z][a-z0-9+.-]*:/i.test(u)) u = 'https://' + u;
+    try {
+      var x = new URL(u);
+      if ((x.protocol === 'http:' || x.protocol === 'https:') && x.hostname.indexOf('.') > 0) return x.href;
+    } catch (e) {}
+    return '';
+  }
+  function hostOf(u) { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return ''; } }
+  function initials(name) {
+    var parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return '?';
+    var a = Array.from(parts[0])[0] || '';
+    var b = parts.length > 1 ? (Array.from(parts[parts.length - 1])[0] || '') : '';
+    return (a + b).toUpperCase();
+  }
+  function colorClass(id) {
+    var s = String(id), h = 0;
+    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+    return 'c' + (Math.abs(h) % 8);
+  }
+  function blobUrl(id) { return '/_blob/' + encodeURIComponent(id); }
+  function photoSrc(p) {
+    if (p && typeof p.src === 'string' && /^data:image\/(png|jpeg|gif|webp);base64,[A-Za-z0-9+\/=]+$/.test(p.src)) return p.src;
+    var base = caps.mode !== 'hosted' && state.assetBase ? state.assetBase : '';
+    return base + blobUrl(p.id);
+  }
+  function rank(list, key) { for (var i = 0; i < list.length; i++) if (list[i].key === key) return i; return 99; }
+  function labelOf(list, key) { for (var i = 0; i < list.length; i++) if (list[i].key === key) return list[i].label; return ''; }
+  function find(list, id) { for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i]; return null; }
+
+  /* ---------- State ---------- */
+  function normalize(raw) {
+    var s = raw && typeof raw === 'object' ? raw : {};
+    function arr(v) { return Array.isArray(v) ? v.filter(function (x) { return x && typeof x === 'object'; }) : []; }
+    var out = {
+      version: 1,
+      updatedAt: typeof s.updatedAt === 'string' ? s.updatedAt : '',
+      assetBase: typeof s.assetBase === 'string' && /^https:\/\/[^\s"'<>]+$/.test(s.assetBase) ? s.assetBase : '',
+      car: Object.assign({ name: '', model: '', number: '', about: '', coverPhotoId: '' }, s.car && typeof s.car === 'object' ? s.car : {}),
+      installed: arr(s.installed),
+      future: arr(s.future),
+      maintenance: arr(s.maintenance),
+      races: arr(s.races),
+      photos: arr(s.photos).filter(function (p) { return typeof p.id === 'string' && p.id; }),
+      contributors: arr(s.contributors)
+    };
+    ['installed', 'future', 'maintenance', 'races', 'contributors'].forEach(function (k) {
+      out[k].forEach(function (it) { if (!it.id) it.id = uid(); });
+    });
+    out.maintenance.forEach(function (m) {
+      m.parts = arr(m.parts);
+      m.parts.forEach(function (p) { if (!p.id) p.id = uid(); });
+    });
+    out.races.forEach(function (r) {
+      ['racerIds', 'racerNames', 'attendeeIds', 'attendeeNames'].forEach(function (k) {
+        r[k] = Array.isArray(r[k]) ? r[k].filter(function (x) { return typeof x === 'string' && x; }) : [];
+      });
+    });
+    return out;
+  }
+
+  var app = $('#app');
+  var modal = $('#modal');
+  var confirmEl = $('#confirm');
+  var lbEl = $('#lightbox');
+  var state;
+  try { state = normalize(JSON.parse($('#build-data').textContent || '{}')); } catch (e) { state = normalize({}); }
+
+  var caps = { artifact: null, user: null, assets: null, canEdit: false, mode: null };
+  var ui = { filter: 'all', preview: false, readOnly: false, doneOpen: false };
+  var lb = { open: false, index: 0, playing: false, timer: null };
+  function isEditing() { return caps.canEdit && !ui.preview && !ui.readOnly; }
+  function hasSamples() {
+    return ['installed', 'future', 'maintenance', 'races', 'contributors'].some(function (k) {
+      return state[k].some(function (x) { return x.sample; });
+    });
+  }
+
+  /* ---------- Shared pieces ---------- */
+  function glyph(kind, key) {
+    if (kind === 'importance') return bars(key);
+    if (kind === 'rating') return ICON[key] || '';
+    return '';
+  }
+  function designator(options, value, action, id, kind, label) {
+    return '<div class="seg seg-' + kind + '" role="group" aria-label="' + esc(label) + '">' + options.map(function (o) {
+      return '<button type="button" class="v-' + o.key + '" aria-pressed="' + (o.key === value) + '" data-action="' + action + '" data-id="' + esc(id) + '" data-value="' + o.key + '">' + glyph(kind, o.key) + '<span>' + esc(o.label) + '</span></button>';
+    }).join('') + '</div>';
+  }
+  function chip(options, value, kind, suffix) {
+    var label = labelOf(options, value);
+    if (!label) return '';
+    return '<span class="chip chip-' + kind + ' v-' + value + '">' + glyph(kind, value) + esc(label) + (suffix || '') + '</span>';
+  }
+  function sampleTag(it) { return it.sample ? '<span class="tag">Example</span>' : ''; }
+  function editBtn(action, id, name) {
+    return '<button type="button" class="icon-btn" data-action="' + action + '" data-id="' + esc(id) + '" aria-label="Edit ' + esc(name) + '" title="Edit">' + ICON.edit + '</button>';
+  }
+  function addBtn(label, action) {
+    return '<button type="button" class="btn btn-primary" data-action="' + action + '">' + ICON.plus + esc(label) + '</button>';
+  }
+  function linkOut(url, prefix) {
+    var u = safeUrl(url);
+    if (!u) return '';
+    return '<a class="link" href="' + esc(u) + '" target="_blank" rel="noopener noreferrer">' + ICON.link + '<span>' + (prefix ? esc(prefix) + ' ' : '') + esc(hostOf(u) || 'link') + '</span></a>';
+  }
+  function emptyState(text) { return '<div class="empty"><p>' + text + '</p></div>'; }
+  function avatar(c, size) { return '<span class="av ' + size + ' ' + colorClass(c.id) + '" aria-hidden="true">' + esc(initials(c.name)) + '</span>'; }
+  function guestAvatar(n, size) { return '<span class="av ' + size + ' guest" aria-hidden="true">' + esc(initials(n)) + '</span>'; }
+  function sec(id, title, meta, actions, body) {
+    return '<section class="sec" id="' + id + '" aria-labelledby="' + id + '-title">' +
+      '<div class="sec-head"><div><h2 id="' + id + '-title">' + esc(title) + '</h2>' + (meta ? '<p class="sec-meta">' + meta + '</p>' : '') + '</div>' +
+      (actions ? '<div class="sec-actions">' + actions + '</div>' : '') + '</div>' + body + '</section>';
+  }
+
+  /* ---------- Hero, summary, nav ---------- */
+  function sampleBanner(edit) {
+    if (!edit || !hasSamples()) return '';
+    return '<div class="banner"><p>Entries tagged <span class="tag">Example</span> show how each section works. Edit one to make it yours, or clear them all at once.</p>' +
+      '<button type="button" class="btn" data-action="remove-samples">Remove examples</button></div>';
+  }
+  function hero(edit) {
+    var c = state.car;
+    var name = c.name || 'Project car';
+    var cover = c.coverPhotoId ? find(state.photos, c.coverPhotoId) : null;
+    var number = String(c.number || '').trim();
+    var updated = state.updatedAt ? new Date(state.updatedAt) : null;
+    var updatedTxt = updated && !isNaN(updated) ? updated.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+    var len = Math.min(Math.max(Array.from(number).length, 1), 4);
+    return '<header class="hero">' +
+      '<div class="hero-text">' +
+        '<p class="eyebrow">Build log' + (updatedTxt ? ' · Updated ' + esc(updatedTxt) : '') + '</p>' +
+        '<h1 class="build-name">' + esc(name) + '</h1>' +
+        (c.model ? '<p class="car-line">' + esc(c.model) + '</p>' : (edit ? '<p class="car-line placeholder">Add the year, make and model</p>' : '')) +
+        (c.about ? '<p class="about">' + esc(c.about) + '</p>' : '') +
+        (edit ? '<div class="hero-actions"><button type="button" class="btn" data-action="edit-car">' + ICON.edit + 'Edit car details</button></div>' : '') +
+      '</div>' +
+      '<div class="hero-visual' + (cover ? ' has-cover' : '') + '">' +
+        (cover ? '<img class="cover" src="' + photoSrc(cover) + '" alt="' + esc(cover.caption || name) + '">' : '<div class="stripes" aria-hidden="true"></div>') +
+        '<div class="roundel len-' + len + (number ? '' : ' unset') + '" role="img" aria-label="' + (number ? 'Car number ' + esc(number) : 'No car number set') + '"><span>' + esc(number || '00') + '</span></div>' +
+      '</div>' +
+    '</header>';
+  }
+  function dash() {
+    var t = todayISO();
+    var open = state.maintenance.filter(function (m) { return !m.doneOn; });
+    var overdue = open.filter(function (m) { return isISO(m.deadline) && daysUntil(m.deadline) < 0; }).length;
+    var nextDue = open.filter(function (m) { return isISO(m.deadline) && daysUntil(m.deadline) >= 0; })
+      .sort(function (a, b) { return a.deadline.localeCompare(b.deadline); })[0];
+    var race = state.races.filter(function (r) { return isISO(r.date) && r.date >= t; })
+      .sort(function (a, b) { return a.date.localeCompare(b.date); })[0];
+    var spent = state.installed.reduce(function (a, p) { return a + num(p.cost); }, 0);
+    var ordered = state.future.filter(function (f) { return f.progress === 'ordered'; }).length;
+    var awaiting = state.future.filter(function (f) { return f.progress === 'awaiting'; }).length;
+    var futureSub = [];
+    if (ordered) futureSub.push(ordered + ' ordered');
+    if (awaiting) futureSub.push(awaiting + ' awaiting install');
+    var roles = [];
+    state.contributors.forEach(function (c) { var r = String(c.role || '').trim(); if (r && roles.indexOf(r) < 0) roles.push(r); });
+    var latest = state.photos[0];
+    function cell(href, k, v, s) {
+      return '<a href="#' + href + '"><span class="k">' + k + '</span><span class="v">' + v + '</span><span class="s">' + s + '</span></a>';
+    }
+    return '<nav class="dash" aria-label="Build summary">' + [
+      cell('installed', 'Installed', state.installed.length, spent ? esc(money(spent)) + ' invested' : plural(state.installed.length, 'part')),
+      cell('races', 'Next race', race ? esc(fmtDate(race.date, { month: 'short', day: 'numeric' })) : '—', race ? esc(race.name) + ' · ' + relDay(daysUntil(race.date)) : 'None scheduled'),
+      cell('maintenance', 'Maintenance', open.length, overdue ? '<span class="bad">' + overdue + ' overdue</span>' : nextDue ? 'Next due ' + esc(fmtDate(nextDue.deadline, { month: 'short', day: 'numeric' })) : 'Nothing due'),
+      cell('future', 'Future mods', state.future.length, futureSub.length ? futureSub.join(' · ') : (state.future.length ? 'Ideas and plans' : 'None yet')),
+      cell('photos', 'Photos', state.photos.length, latest && isISO(latest.added) ? 'Latest ' + esc(fmtDate(latest.added, { month: 'short', day: 'numeric' })) : 'None yet'),
+      cell('contributors', 'Contributors', state.contributors.length, roles.length ? esc(roles.slice(0, 3).join(', ')) + (roles.length > 3 ? ' and more' : '') : 'None yet')
+    ].join('') + '</nav>';
+  }
+  function nav() {
+    var counts = {
+      installed: state.installed.length,
+      races: state.races.length,
+      maintenance: state.maintenance.filter(function (m) { return !m.doneOn; }).length,
+      future: state.future.length,
+      photos: state.photos.length,
+      contributors: state.contributors.length
+    };
+    return '<nav class="secnav" aria-label="Sections"><div class="secnav-inner">' + SECTIONS.map(function (s) {
+      return '<a href="#' + s.id + '" data-sec="' + s.id + '">' + s.label + '<span class="count">' + counts[s.id] + '</span></a>';
+    }).join('') + '</div></nav>';
+  }
+
+  /* ---------- Installed parts ---------- */
+  function installedSec(edit) {
+    var items = state.installed.slice().sort(function (a, b) { return String(b.date || '').localeCompare(String(a.date || '')); });
+    var spent = items.reduce(function (a, p) { return a + num(p.cost); }, 0);
+    var meta = items.length ? plural(items.length, 'part') + (spent ? ' · ' + esc(money(spent)) + ' invested' : '') : '';
+    var actions = edit ? addBtn('Add installed part', 'add-installed') : '';
+    if (!items.length) {
+      return sec('installed', 'Installed parts', meta, actions, emptyState(edit ? 'Nothing installed yet. Add a part when it goes on the car, or use Mark installed on a future mod.' : 'No installed parts logged yet.'));
+    }
+    var f = rank(RATINGS, ui.filter) < 99 ? ui.filter : 'all';
+    var shown = f === 'all' ? items : items.filter(function (i) { return i.rating === f; });
+    var filters = '<div class="filters" role="group" aria-label="Filter by rating">' + [{ key: 'all', label: 'All' }].concat(RATINGS).map(function (o) {
+      var n = o.key === 'all' ? items.length : items.filter(function (i) { return i.rating === o.key; }).length;
+      return '<button type="button" class="filter" aria-pressed="' + (f === o.key) + '" data-action="filter" data-value="' + o.key + '">' + (o.key !== 'all' ? ICON[o.key] : '') + esc(o.label) + '<span class="n">' + n + '</span></button>';
+    }).join('') + '</div>';
+    var list = shown.length
+      ? '<ol class="parts-list">' + shown.map(function (p) { return installedRow(p, edit); }).join('') + '</ol>'
+      : '<p class="empty-inline">No ' + esc(labelOf(RATINGS, f).toLowerCase()) + ' parts yet.</p>';
+    return sec('installed', 'Installed parts', meta, actions, filters + list);
+  }
+  function installedRow(p, edit) {
+    var d = isISO(p.date) ? dateParts(p.date) : null;
+    var rating = edit ? designator(RATINGS, p.rating, 'set-rating', p.id, 'rating', 'Rating') : chip(RATINGS, p.rating, 'rating');
+    var hasCost = typeof p.cost === 'number';
+    var link = linkOut(p.link);
+    return '<li class="part">' +
+      '<div class="part-date">' + (d ? '<span class="m">' + d.mon + '</span><span class="d">' + d.day + '</span><span class="y">' + d.year + '</span>' : '<span class="m">Date</span><span class="y">not set</span>') + '</div>' +
+      '<div class="part-main">' +
+        '<h3 class="part-name">' + esc(p.name) + sampleTag(p) + '</h3>' +
+        (p.notes ? '<p class="notes">' + esc(p.notes) + '</p>' : '') +
+        (link || hasCost ? '<div class="meta-row">' + link + (hasCost ? '<span class="cost">' + esc(money(p.cost)) + '</span>' : '') + '</div>' : '') +
+      '</div>' +
+      '<div class="part-rating">' + rating + '</div>' +
+      (edit ? editBtn('edit-installed', p.id, p.name) : '') +
+    '</li>';
+  }
+
+  /* ---------- Races ---------- */
+  function racesSec(edit) {
+    var t = todayISO();
+    var up = state.races.filter(function (r) { return !isISO(r.date) || r.date >= t; })
+      .sort(function (a, b) { return (isISO(a.date) ? a.date : '9999').localeCompare(isISO(b.date) ? b.date : '9999'); });
+    var past = state.races.filter(function (r) { return isISO(r.date) && r.date < t; })
+      .sort(function (a, b) { return b.date.localeCompare(a.date); });
+    var meta = state.races.length ? up.length + ' upcoming · ' + past.length + ' completed' : '';
+    var actions = edit ? addBtn('Add race', 'add-race') : '';
+    if (!state.races.length) {
+      return sec('races', 'Races', meta, actions, emptyState(edit ? 'No races yet. Add an event with its date, location, racers and who’s coming along.' : 'No races logged yet.'));
+    }
+    var body = '';
+    if (up.length) body += '<h3 class="sub">Upcoming</h3><div class="races">' + up.map(function (r) { return raceCard(r, edit, true); }).join('') + '</div>';
+    if (past.length) body += '<h3 class="sub">Completed</h3><div class="races">' + past.map(function (r) { return raceCard(r, edit, false); }).join('') + '</div>';
+    return sec('races', 'Races', meta, actions, body);
+  }
+  function peopleChips(ids, names) {
+    var out = [];
+    (ids || []).forEach(function (id) {
+      var c = find(state.contributors, id);
+      if (c) out.push('<span class="person">' + avatar(c, 'sm') + esc(c.name) + '</span>');
+    });
+    (names || []).forEach(function (n) { out.push('<span class="person">' + guestAvatar(n, 'sm') + esc(n) + '</span>'); });
+    return out.join('');
+  }
+  function raceCard(r, edit, upcoming) {
+    var d = isISO(r.date) ? dateParts(r.date) : null;
+    var n = d ? daysUntil(r.date) : null;
+    var status = n == null ? 'Date to be set' : n === 0 ? 'Race day' : n === 1 ? 'Tomorrow' : n > 0 ? 'In ' + n + ' days' : 'Completed';
+    var racers = peopleChips(r.racerIds, r.racerNames);
+    var att = peopleChips(r.attendeeIds, r.attendeeNames);
+    return '<article class="race' + (upcoming ? ' upcoming' : '') + '">' +
+      '<div class="race-date">' + (d ? '<span class="mon">' + d.mon + '</span><span class="day">' + d.day + '</span><span class="yr">' + d.wd + ' ' + d.year + '</span>' : '<span class="mon">DATE</span><span class="day">—</span><span class="yr">TBD</span>') + '</div>' +
+      '<div class="race-body">' +
+        '<div class="race-top"><h3>' + esc(r.name) + sampleTag(r) + '</h3><span class="countdown">' + status + '</span></div>' +
+        (r.location ? '<p class="loc">' + ICON.pin + '<span>' + esc(r.location) + '</span></p>' : '') +
+        '<div class="people-row"><span class="lbl">Racers</span><div class="people">' + (racers || '<span class="none">None yet</span>') + '</div></div>' +
+        '<div class="people-row"><span class="lbl">Attendees</span><div class="people">' + (att || '<span class="none">None yet</span>') + '</div></div>' +
+        (r.result ? '<p class="result">' + esc(r.result) + '</p>' : '') +
+      '</div>' +
+      (edit ? '<div class="race-edit">' + editBtn('edit-race', r.id, r.name) + '</div>' : '') +
+    '</article>';
+  }
+
+  /* ---------- Maintenance ---------- */
+  function maintenanceSec(edit) {
+    var open = state.maintenance.filter(function (m) { return !m.doneOn; }).sort(function (a, b) {
+      var da = isISO(a.deadline) ? a.deadline : '9999-99-99';
+      var db = isISO(b.deadline) ? b.deadline : '9999-99-99';
+      return da.localeCompare(db) || rank(IMPORTANCE, a.importance) - rank(IMPORTANCE, b.importance);
+    });
+    var done = state.maintenance.filter(function (m) { return m.doneOn; })
+      .sort(function (a, b) { return String(b.doneOn).localeCompare(String(a.doneOn)); });
+    var overdue = open.filter(function (m) { return isISO(m.deadline) && daysUntil(m.deadline) < 0; }).length;
+    var meta = state.maintenance.length ? open.length + ' open' + (overdue ? ' · <span class="bad">' + overdue + ' overdue</span>' : '') + ' · ' + done.length + ' done' : '';
+    var actions = edit ? addBtn('Add maintenance', 'add-mt') : '';
+    if (!state.maintenance.length) {
+      return sec('maintenance', 'Maintenance', meta, actions, emptyState(edit ? 'No maintenance scheduled. Add a task with a deadline and the parts you need for it.' : 'No maintenance scheduled.'));
+    }
+    var body = open.length
+      ? '<div class="mt-list">' + open.map(function (m) { return mtRow(m, edit); }).join('') + '</div>'
+      : '<p class="empty-inline">All caught up. Nothing open right now.</p>';
+    if (done.length) {
+      body += '<details class="done"' + (ui.doneOpen ? ' open' : '') + '><summary>Completed (' + done.length + ')</summary><ul>' + done.map(function (m) {
+        return '<li><span class="when">' + esc(fmtDate(m.doneOn)) + '</span><span>' + esc(m.title) + sampleTag(m) + '</span>' +
+          (edit ? '<button type="button" class="btn btn-small" data-action="reopen-mt" data-id="' + esc(m.id) + '">Reopen</button>' : '') + '</li>';
+      }).join('') + '</ul></details>';
+    }
+    return sec('maintenance', 'Maintenance', meta, actions, body);
+  }
+  function mtRow(m, edit) {
+    var n = isISO(m.deadline) ? daysUntil(m.deadline) : null;
+    var st = n == null ? 'none' : n < 0 ? 'overdue' : n <= 7 ? 'soon' : 'ok';
+    var due = n == null ? 'No deadline' : 'Due ' + fmtDate(m.deadline) + ' · ' + (n < 0 ? plural(-n, 'day') + ' overdue' : n === 0 ? 'today' : n === 1 ? 'tomorrow' : 'in ' + n + ' days');
+    var parts = m.parts || [];
+    var have = parts.filter(function (p) { return p.have; }).length;
+    var imp = edit ? designator(IMPORTANCE, m.importance, 'set-mt-importance', m.id, 'importance', 'Importance') : chip(IMPORTANCE, m.importance, 'importance', ' importance');
+    var partsHtml = '';
+    if (parts.length) {
+      partsHtml = '<div class="mt-parts"><p class="mini-label">Parts · ' + have + ' of ' + parts.length + ' on hand</p><ul>' + parts.map(function (p) {
+        var tick = edit
+          ? '<button type="button" class="tick" aria-pressed="' + !!p.have + '" data-action="toggle-part" data-id="' + esc(m.id) + '" data-value="' + esc(p.id) + '" aria-label="' + esc(p.name) + ' on hand" title="' + (p.have ? 'On hand' : 'Mark as on hand') + '">' + ICON.check + '</button>'
+          : '<span class="tick" aria-hidden="true">' + ICON.check + '</span><span class="sr-only">' + (p.have ? 'On hand: ' : 'Needed: ') + '</span>';
+        return '<li class="' + (p.have ? 'have' : '') + '">' + tick + '<span class="pname">' + esc(p.name) + '</span>' + linkOut(p.link) + '</li>';
+      }).join('') + '</ul></div>';
+    }
+    return '<article class="mt ' + st + '">' +
+      '<div class="mt-main">' +
+        '<div class="mt-head"><h3>' + esc(m.title) + sampleTag(m) + '</h3>' + imp + '</div>' +
+        '<p class="due">' + esc(due) + '</p>' +
+        partsHtml +
+        (m.notes ? '<p class="notes">' + esc(m.notes) + '</p>' : '') +
+      '</div>' +
+      (edit ? '<div class="mt-actions"><button type="button" class="btn btn-small" data-action="done-mt" data-id="' + esc(m.id) + '">' + ICON.check + 'Mark done</button>' + editBtn('edit-mt', m.id, m.title) + '</div>' : '') +
+    '</article>';
+  }
+
+  /* ---------- Future mods ---------- */
+  function shift(f, edit) {
+    var idx = rank(PROGRESS, f.progress);
+    if (idx === 99) idx = -1;
+    return '<div class="shift" role="group" aria-label="Progress">' + PROGRESS.map(function (p, i) {
+      var cls = 'led' + (i <= idx ? ' lit' : '') + (i === idx ? ' cur' : '');
+      var inner = '<span class="led-bar"></span><span class="led-label">' + esc(p.label) + '</span>';
+      return edit
+        ? '<button type="button" class="' + cls + '" aria-pressed="' + (i === idx) + '" data-action="set-progress" data-id="' + esc(f.id) + '" data-value="' + p.key + '">' + inner + '</button>'
+        : '<span class="' + cls + '"' + (i === idx ? ' aria-current="step"' : '') + '>' + inner + '</span>';
+    }).join('') + '</div>';
+  }
+  function futureSec(edit) {
+    var items = state.future.slice().sort(function (a, b) {
+      return rank(IMPORTANCE, a.importance) - rank(IMPORTANCE, b.importance) || rank(PROGRESS, b.progress) - rank(PROGRESS, a.progress);
+    });
+    var planned = items.reduce(function (a, f) { return a + num(f.cost); }, 0);
+    var stages = PROGRESS.map(function (p) {
+      return { label: p.label, n: items.filter(function (f) { return f.progress === p.key; }).length };
+    }).filter(function (x) { return x.n; });
+    var meta = items.length ? stages.map(function (x) { return x.n + ' ' + x.label.toLowerCase(); }).join(' · ') + (planned ? ' · ' + esc(money(planned)) + ' estimated' : '') : '';
+    var actions = edit ? addBtn('Add future mod', 'add-future') : '';
+    if (!items.length) {
+      return sec('future', 'Future modifications', meta, actions, emptyState(edit ? 'No future mods yet. Add an idea, link where you’d buy it, and move it from theoretical to awaiting installation.' : 'No future mods planned yet.'));
+    }
+    var cards = items.map(function (f) {
+      var hasCost = typeof f.cost === 'number';
+      var link = linkOut(f.link, 'Buy at');
+      return '<article class="mod">' +
+        '<div class="mod-top"><span class="mini-label">Importance</span>' + (edit ? designator(IMPORTANCE, f.importance, 'set-importance', f.id, 'importance', 'Importance') : chip(IMPORTANCE, f.importance, 'importance')) + '</div>' +
+        '<h3 class="mod-name">' + esc(f.name) + sampleTag(f) + '</h3>' +
+        '<div><p class="mini-label">Progress</p>' + shift(f, edit) + '</div>' +
+        (link || hasCost ? '<div class="meta-row">' + link + (hasCost ? '<span class="cost">Est. ' + esc(money(f.cost)) + '</span>' : '') + '</div>' : '') +
+        (f.notes ? '<p class="notes">' + esc(f.notes) + '</p>' : '') +
+        (edit ? '<div class="mod-foot"><button type="button" class="btn btn-small" data-action="install-mod" data-id="' + esc(f.id) + '">' + ICON.check + 'Mark installed</button>' + editBtn('edit-future', f.id, f.name) + '</div>' : '') +
+      '</article>';
+    }).join('');
+    return sec('future', 'Future modifications', meta, actions, '<div class="mods">' + cards + '</div>');
+  }
+
+  /* ---------- Photography ---------- */
+  function photosSec(edit) {
+    var ph = state.photos;
+    var canUpload = edit && canUploadPhotos();
+    var actions = (ph.length > 1 ? '<button type="button" class="btn" data-action="play">' + ICON.play + 'Play slideshow</button>' : '') +
+      (canUpload ? '<button type="button" class="btn btn-primary" data-action="pick-photos">' + ICON.upload + 'Upload photos</button>' : '');
+    var meta = ph.length ? plural(ph.length, 'photo') : '';
+    var body = canUpload ? '<input type="file" id="photo-input" accept="image/*" multiple hidden>' : '';
+    if (canUpload) {
+      body += '<button type="button" class="drop' + (ph.length ? ' compact' : '') + '" data-action="pick-photos">' + ICON.camera +
+        '<span><strong>Drop photos here</strong> or choose files</span><span class="hint">' + (caps.mode === 'local' ? 'Photos are stored inside this file, resized to 1800 px on the long side.' : 'JPEG, PNG, WebP or GIF. Big photos are resized to 2400 px on the long side.') + '</span></button>';
+    } else if (edit) {
+      body += '<p class="hint">Photo uploads aren’t available in this view.</p>';
+    }
+    if (ph.length) {
+      body += '<div class="roll">' + ph.map(function (p, i) {
+        return '<button type="button" class="tile" data-action="open-photo" data-value="' + i + '" aria-label="Open photo ' + (i + 1) + (p.caption ? ': ' + esc(p.caption) : '') + '">' +
+          '<img src="' + photoSrc(p) + '" alt="" loading="lazy" decoding="async">' +
+          (state.car.coverPhotoId === p.id ? '<span class="cover-badge">Cover</span>' : '') + '</button>';
+      }).join('') + '</div>';
+    } else if (!canUpload) {
+      body += emptyState('No photos yet.');
+    }
+    return sec('photos', 'Photography', meta, actions, body);
+  }
+
+  /* ---------- Contributors ---------- */
+  function contactHtml(s) {
+    s = String(s || '').trim();
+    if (!s) return '';
+    if (/^(https?:\/\/|www\.)/i.test(s) && safeUrl(s)) return '<p class="contact">' + linkOut(s) + '</p>';
+    return '<p class="contact">' + esc(s) + '</p>';
+  }
+  function contributorsSec(edit) {
+    var cs = state.contributors;
+    var actions = edit ? addBtn('Add contributor', 'add-contributor') : '';
+    var meta = cs.length ? plural(cs.length, 'person', 'people') : '';
+    if (!cs.length) {
+      return sec('contributors', 'Contributors', meta, actions, emptyState(edit ? 'No contributors yet. Add the people who drive, wrench, shoot photos and show up. You can then pick them as racers or attendees.' : 'No contributors listed yet.'));
+    }
+    var cards = cs.map(function (c) {
+      var raced = state.races.filter(function (r) { return r.racerIds.indexOf(c.id) >= 0; }).length;
+      var attended = state.races.filter(function (r) { return r.attendeeIds.indexOf(c.id) >= 0; }).length;
+      return '<article class="crew ' + colorClass(c.id) + '">' + avatar(c, 'lg') +
+        '<div><h3>' + esc(c.name) + sampleTag(c) + '</h3>' +
+          (c.role ? '<p class="role">' + esc(c.role) + '</p>' : '') +
+          contactHtml(c.contact) +
+          (c.notes ? '<p class="notes">' + esc(c.notes) + '</p>' : '') +
+          '<p class="crew-stats">Raced ' + raced + ' · Attended ' + attended + '</p>' +
+        '</div>' +
+        (edit ? editBtn('edit-contributor', c.id, c.name) : '') +
+      '</article>';
+    }).join('');
+    return sec('contributors', 'Contributors', meta, actions, '<div class="crew-grid">' + cards + '</div>');
+  }
+
+  /* ---------- Render ---------- */
+  var restoreY = null;
+  var io = null;
+  function render() {
+    var edit = isEditing();
+    document.body.classList.toggle('editing', caps.canEdit && !ui.readOnly);
+    var c = state.car;
+    app.innerHTML =
+      '<div class="wrap">' + sampleBanner(edit) + hero(edit) + dash() + '</div>' +
+      nav() +
+      '<main class="wrap">' + installedSec(edit) + racesSec(edit) + maintenanceSec(edit) + futureSec(edit) + photosSec(edit) + contributorsSec(edit) + '</main>' +
+      '<footer class="wrap foot"><span>' + esc(c.name || 'Project car') + (c.model ? ' · ' + esc(c.model) : '') + '</span>' +
+        '<span>' + (edit ? (caps.mode === 'local' ? 'You’re editing the copy on your computer. Save the file to keep your changes.' : 'Only you can edit. Anyone with the link sees each change once it saves.') : 'Build log') + '</span></footer>';
+    renderStatus();
+    observeSections();
+    if (restoreY != null) window.scrollTo(0, restoreY);
+  }
+  function observeSections() {
+    if (io) io.disconnect();
+    if (!('IntersectionObserver' in window)) return;
+    var links = {};
+    app.querySelectorAll('.secnav a').forEach(function (a) { links[a.getAttribute('data-sec')] = a; });
+    io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        Object.keys(links).forEach(function (k) { links[k].removeAttribute('aria-current'); });
+        var a = links[en.target.id];
+        if (a) a.setAttribute('aria-current', 'true');
+      });
+    }, { rootMargin: '-40% 0px -55% 0px' });
+    app.querySelectorAll('section.sec').forEach(function (s) { io.observe(s); });
+  }
+
+  /* ---------- Saving ---------- */
+  var saveTimer = null, saving = false, dirty = false, deferredSave = false;
+  var saveMsg = '', saveState = 'saved', saveNote = '', retried = {};
+
+  function setSaveState(st, note) { saveState = st; saveNote = note || ''; renderStatus(); }
+  function renderStatus() {
+    var el = $('#status');
+    if (!caps.canEdit || ui.readOnly) { el.innerHTML = ''; return; }
+    if (ui.preview) {
+      el.innerHTML = '<div class="pill preview"><span class="dot"></span><span>Previewing as a visitor</span><button type="button" data-action="toggle-preview">Back to editing</button></div>';
+      return;
+    }
+    if (caps.mode === 'local') {
+      var ltxt = saveNote || (localDirty ? 'Not saved to the file yet' : 'No unsaved changes');
+      var lcls = localDirty ? (saveState === 'error' ? 'error' : 'pending') : 'saved';
+      el.innerHTML = '<div class="pill ' + lcls + '" role="status" title="Ctrl+S or Cmd+S also saves"><span class="dot"></span><span>' + esc(ltxt) + '</span>' +
+        (localDirty ? '<button type="button" class="pill-primary" data-action="save-file">Save file</button>' : '') +
+        '<button type="button" data-action="toggle-preview">Preview as visitor</button></div>';
+      return;
+    }
+    var txt = saveState === 'saved' ? 'All changes saved'
+      : saveState === 'saving' ? 'Saving…'
+      : saveState === 'pending' ? (saveNote || 'Unsaved changes…')
+      : (saveNote || 'Couldn’t save');
+    el.innerHTML = '<div class="pill ' + saveState + '" role="status" title="Anyone with the link sees saved changes. Only you can edit."><span class="dot"></span><span>' + esc(txt) + '</span>' +
+      (saveState === 'error' && dirty ? '<button type="button" data-action="retry-save">Retry</button>' : '') +
+      '<button type="button" data-action="toggle-preview">Preview as visitor</button></div>';
+  }
+  function commit(mutate, o) {
+    o = o || {};
+    if (!isEditing() || saving) return;
+    mutate(state);
+    state.updatedAt = new Date().toISOString();
+    render();
+    if (lb.open) renderLightbox();
+    if (caps.mode === 'local') { localChanged(); return; }
+    queueSave(o.immediate ? 0 : 1200, o.msg);
+  }
+  function queueSave(delay, msg) {
+    dirty = true;
+    if (msg) saveMsg = msg;
+    clearTimeout(saveTimer);
+    saveTimer = null;
+    setSaveState('pending');
+    if (delay > 0 && modal.open) { deferredSave = true; return; }
+    saveTimer = setTimeout(save, delay);
+  }
+  function buildDocument() {
+    var css = $('#app-style').textContent;
+    var js = $('#app-script').textContent;
+    var data = JSON.stringify(state).replace(/</g, '\\u003c');
+    return '<!DOCTYPE html>\n<html lang="en">\n<head>\n' + HEAD + '\n<style id="app-style">' + css + '</style>\n</head>\n<body>\n' + SHELL +
+      '\n<script id="build-data" type="application/json">' + data + END_SCRIPT +
+      '\n<script id="app-script">' + js + END_SCRIPT + '\n</body>\n</html>\n';
+  }
+  async function save() {
+    saveTimer = null;
+    if (saving || !dirty) return;
+    if (!caps.artifact) { setSaveState('error', 'Saving isn’t available in this view.'); return; }
+    saving = true;
+    setSaveState('saving');
+    lock('Saving…');
+    stashView(saveMsg || 'Saved');
+    try { if (/^https:\/\//.test(location.origin)) state.assetBase = location.origin; } catch (e) {}
+    var html;
+    try { html = buildDocument(); } catch (e) {
+      saving = false; unlock(); clearStash();
+      setSaveState('error', 'Couldn’t prepare the page to save.');
+      return;
+    }
+    try {
+      await caps.artifact.publish(html);
+      dirty = false; saveMsg = ''; retried = {};
+      setSaveState('saved');
+      lock('Saved. Refreshing…');
+      // The platform reloads this view to the new version. If that doesn't happen, unlock.
+      setTimeout(function () { saving = false; unlock(); clearStash(); }, 15000);
+    } catch (err) {
+      saving = false; unlock(); clearStash();
+      onSaveError(err);
+    }
+  }
+  function onSaveError(err) {
+    var code = err && err.code;
+    if (code === 'conflict') {
+      setSaveState('error', 'Loading a newer version…');
+      toast('This page was changed somewhere else, so it’s loading the latest version. Your last change wasn’t saved.', 'err');
+      return;
+    }
+    if (['not_writer', 'not_granted', 'consent_required', 'capability_disabled', 'capability_removed', 'not_declared'].indexOf(code) >= 0) {
+      ui.readOnly = true;
+      render();
+      toast('This view is read-only, so changes can’t be saved here.', 'err');
+      return;
+    }
+    if (code === 'too_large') { setSaveState('error', 'Too much to save. Remove some entries, then retry.'); return; }
+    if (code === 'rate_limited' && !retried.rate) {
+      retried.rate = true;
+      setSaveState('pending', 'Saving again in a few seconds…');
+      saveTimer = setTimeout(save, 8000);
+      return;
+    }
+    if ((code === 'upstream_error' || !code) && !retried.up) {
+      retried.up = true;
+      saveTimer = setTimeout(save, 800 + Math.random() * 1200);
+      return;
+    }
+    setSaveState('error', 'Couldn’t save your changes.');
+  }
+  function stashView(msg) {
+    try {
+      sessionStorage.setItem(STASH_KEY, JSON.stringify({
+        t: Date.now(), y: window.scrollY, msg: msg,
+        ui: { filter: ui.filter, doneOpen: ui.doneOpen },
+        lb: lb.open ? lb.index : null
+      }));
+    } catch (e) {}
+  }
+  function clearStash() { try { sessionStorage.removeItem(STASH_KEY); } catch (e) {} }
+  function readStash() {
+    try {
+      var raw = sessionStorage.getItem(STASH_KEY);
+      if (!raw) return null;
+      sessionStorage.removeItem(STASH_KEY);
+      var v = JSON.parse(raw);
+      return v && Date.now() - v.t < 120000 ? v : null;
+    } catch (e) { return null; }
+  }
+  function lock(text) {
+    var el = $('#lock');
+    el.innerHTML = '<div class="lock-card"><span class="spin" aria-hidden="true"></span><span>' + esc(text) + '</span></div>';
+    el.hidden = false;
+  }
+  function unlock() { var el = $('#lock'); el.hidden = true; el.innerHTML = ''; }
+  function toast(msg, kind) {
+    var el = document.createElement('div');
+    el.className = 'toast' + (kind === 'err' ? ' err' : '');
+    el.textContent = msg;
+    $('#toasts').appendChild(el);
+    setTimeout(function () { el.remove(); }, kind === 'err' ? 7000 : 3200);
+  }
+
+  /* ---------- Editing a downloaded copy ---------- */
+  var DRAFT_KEY = 'car-build-log:draft:' + location.pathname;
+  var localDirty = false, draftTimer = null, fileHandle = null;
+  function canUploadPhotos() { return isEditing() && (caps.mode === 'local' || !!caps.assets); }
+  function startLocal() {
+    caps.mode = 'local';
+    caps.canEdit = true;
+    var restored = false;
+    try {
+      var raw = localStorage.getItem(DRAFT_KEY);
+      if (raw) {
+        var d = normalize(JSON.parse(raw));
+        if (d.updatedAt && d.updatedAt > (state.updatedAt || '')) { state = d; restored = true; localDirty = true; }
+        else localStorage.removeItem(DRAFT_KEY);
+      }
+    } catch (e) {}
+    saveState = localDirty ? 'pending' : 'saved';
+    render();
+    if (restored) toast('Brought back changes you hadn’t saved to the file yet. Use Save file to keep them.');
+  }
+  function localChanged() {
+    localDirty = true;
+    saveState = 'pending';
+    saveNote = '';
+    renderStatus();
+    clearTimeout(draftTimer);
+    draftTimer = setTimeout(function () {
+      try { localStorage.setItem(DRAFT_KEY, JSON.stringify(state)); } catch (e) {}
+    }, 400);
+  }
+  function suggestedName() {
+    var n = '';
+    try { n = decodeURIComponent(location.pathname.split('/').pop() || ''); } catch (e) {}
+    return /\.html?$/i.test(n) ? n : 'project-car-build-log.html';
+  }
+  async function saveFile() {
+    if (caps.mode !== 'local') return;
+    var html;
+    try { html = buildDocument(); } catch (e) {
+      saveState = 'error'; saveNote = 'Couldn’t prepare the file'; renderStatus();
+      return;
+    }
+    var blob = new Blob([html], { type: 'text/html' });
+    if (typeof window.showSaveFilePicker === 'function') {
+      try {
+        if (!fileHandle) {
+          fileHandle = await window.showSaveFilePicker({
+            suggestedName: suggestedName(),
+            types: [{ description: 'Web page', accept: { 'text/html': ['.html', '.htm'] } }]
+          });
+        }
+        var w = await fileHandle.createWritable();
+        await w.write(blob);
+        await w.close();
+        fileSaved('Saved to ' + fileHandle.name);
+        return;
+      } catch (e) {
+        if (e && e.name === 'AbortError') return;
+        fileHandle = null;
+      }
+    }
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = suggestedName();
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+    fileSaved('Downloaded ' + a.download, 'Your browser saved an updated copy named ' + a.download + '. Open that copy next time.');
+  }
+  function fileSaved(note, longNote) {
+    localDirty = false;
+    clearTimeout(draftTimer);
+    try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+    saveState = 'saved';
+    saveNote = note;
+    renderStatus();
+    toast(longNote || note);
+  }
+  function readDataUrl(blob) {
+    return new Promise(function (res, rej) {
+      var r = new FileReader();
+      r.onload = function () { res(String(r.result)); };
+      r.onerror = rej;
+      r.readAsDataURL(blob);
+    });
+  }
+  async function embedImage(file) {
+    if (file.type === 'image/gif') {
+      if (file.size > 4 * 1024 * 1024) throw { code: 'too_large_local' };
+      return readDataUrl(file);
+    }
+    var blob = await prepareImage(file, 1800, true);
+    if (!blob || blob.type !== 'image/jpeg') throw { code: 'decode' };
+    return readDataUrl(blob);
+  }
+
+  /* ---------- Dialogs ---------- */
+  var modalCtx = null;
+  var downOnBackdrop = false;
+  function openModal(opts) {
+    if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; deferredSave = true; }
+    modalCtx = opts;
+    modal.innerHTML = '<form class="modal-form" id="modal-form">' +
+      '<div class="modal-head"><h2 id="modal-title">' + esc(opts.title) + '</h2><button type="button" class="icon-btn" data-close aria-label="Close">' + ICON.close + '</button></div>' +
+      '<div class="modal-body">' + opts.body + '</div>' +
+      '<div class="modal-foot">' + (opts.onDelete ? '<button type="button" class="btn btn-danger" data-delete>' + ICON.trash + esc(opts.deleteLabel || 'Delete') + '</button>' : '') +
+        '<span class="spacer"></span><button type="button" class="btn" data-close>Cancel</button><button type="submit" class="btn btn-primary">' + esc(opts.submitLabel || 'Save') + '</button></div>' +
+    '</form>';
+    if (!modal.open) modal.showModal();
+    var first = modal.querySelector('.modal-body input[type="text"], .modal-body textarea');
+    if (first) first.focus();
+  }
+  function closeModal() { if (modal.open) modal.close(); }
+  modal.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (!modalCtx) return;
+    var result = modalCtx.onSubmit(e.target);
+    if (result !== false) closeModal();
+  });
+  modal.addEventListener('mousedown', function (e) { downOnBackdrop = e.target === modal; });
+  modal.addEventListener('click', function (e) {
+    var t = e.target;
+    if (t === modal) { if (downOnBackdrop) closeModal(); return; }
+    if (t.closest('[data-close]')) { closeModal(); return; }
+    if (t.closest('[data-delete]')) {
+      var ctx = modalCtx;
+      confirmBox(ctx.confirmDelete).then(function (ok) {
+        if (!ok || modalCtx !== ctx) return;
+        closeModal();
+        ctx.onDelete();
+      });
+      return;
+    }
+    var addOther = t.closest('[data-add-other]');
+    if (addOther) { addOtherName(addOther.closest('.people-field')); return; }
+    var rmOther = t.closest('[data-remove-other]');
+    if (rmOther) { rmOther.closest('.other-chip').remove(); return; }
+    if (t.closest('[data-add-part]')) { addPartRow(); return; }
+    var rmPart = t.closest('[data-remove-part]');
+    if (rmPart) { rmPart.closest('.part-row').remove(); return; }
+  });
+  modal.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && e.target.matches && e.target.matches('.add-other input')) {
+      e.preventDefault();
+      addOtherName(e.target.closest('.people-field'));
+    }
+  });
+  modal.addEventListener('close', function () {
+    modalCtx = null;
+    modal.innerHTML = '';
+    if (deferredSave) {
+      deferredSave = false;
+      if (dirty && !saving && !saveTimer) queueSave(300);
+    }
+  });
+
+  function confirmBox(o) {
+    o = o || {};
+    return new Promise(function (resolve) {
+      confirmEl.innerHTML = '<div class="confirm-body"><h2 id="confirm-title">' + esc(o.title || 'Delete this?') + '</h2>' + (o.text ? '<p>' + esc(o.text) + '</p>' : '') + '</div>' +
+        '<div class="modal-foot"><span class="spacer"></span><button type="button" class="btn" data-no>Cancel</button>' +
+        '<button type="button" class="btn ' + (o.danger === false ? 'btn-primary' : 'btn-danger-solid') + '" data-yes>' + esc(o.ok || 'Delete') + '</button></div>';
+      var done = false;
+      function finish(v) {
+        if (done) return;
+        done = true;
+        confirmEl.removeEventListener('click', onClick);
+        confirmEl.removeEventListener('close', onClose);
+        if (confirmEl.open) confirmEl.close();
+        resolve(v);
+      }
+      function onClick(e) {
+        if (e.target.closest('[data-yes]')) finish(true);
+        else if (e.target.closest('[data-no]') || e.target === confirmEl) finish(false);
+      }
+      function onClose() { finish(false); }
+      confirmEl.addEventListener('click', onClick);
+      confirmEl.addEventListener('close', onClose);
+      confirmEl.showModal();
+      confirmEl.querySelector('[data-no]').focus();
+    });
+  }
+
+  /* ---------- Form building ---------- */
+  function fText(id, label, value, o) {
+    o = o || {};
+    return '<div class="field"><label for="' + id + '">' + esc(label) + (o.required ? '' : ' <span class="opt">optional</span>') + '</label>' +
+      '<input id="' + id + '" name="' + id + '" type="' + (o.type || 'text') + '" value="' + esc(value == null ? '' : value) + '"' +
+      (o.required ? ' required' : '') + (o.placeholder ? ' placeholder="' + esc(o.placeholder) + '"' : '') +
+      (o.inputmode ? ' inputmode="' + o.inputmode + '"' : '') + (o.maxlength ? ' maxlength="' + o.maxlength + '"' : '') +
+      (o.list ? ' list="' + o.list + '"' : '') + ' autocomplete="off">' +
+      (o.hint ? '<p class="hint">' + o.hint + '</p>' : '') + '</div>';
+  }
+  function fArea(id, label, value, o) {
+    o = o || {};
+    return '<div class="field"><label for="' + id + '">' + esc(label) + ' <span class="opt">optional</span></label>' +
+      '<textarea id="' + id + '" name="' + id + '"' + (o.placeholder ? ' placeholder="' + esc(o.placeholder) + '"' : '') + '>' + esc(value || '') + '</textarea></div>';
+  }
+  function fChoice(name, label, options, value, kind, optional) {
+    return '<fieldset class="field"><legend>' + esc(label) + (optional ? ' <span class="opt">optional</span>' : '') + '</legend><div class="seg seg-' + kind + ' seg-form">' + options.map(function (o) {
+      return '<label class="v-' + o.key + '"><input type="radio" name="' + name + '" id="' + name + '-' + o.key + '" value="' + o.key + '"' + (o.key === value ? ' checked' : '') + '>' + glyph(kind, o.key) + '<span>' + esc(o.label) + '</span></label>';
+    }).join('') + '</div></fieldset>';
+  }
+  function getter(form) {
+    return function (id) { var el = form.elements[id]; return el ? String(el.value).trim() : ''; };
+  }
+  function radioVal(form, name) {
+    var el = form.querySelector('input[name="' + name + '"]:checked');
+    return el ? el.value : '';
+  }
+  function otherChip(n) {
+    return '<span class="other-chip" data-name="' + esc(n) + '">' + esc(n) + '<button type="button" data-remove-other aria-label="Remove ' + esc(n) + '">' + ICON.close + '</button></span>';
+  }
+  function peopleField(key, label, ids, names) {
+    var cons = state.contributors;
+    return '<fieldset class="field people-field" data-key="' + key + '"><legend>' + esc(label) + ' <span class="opt">optional</span></legend>' +
+      (cons.length
+        ? '<div class="pick">' + cons.map(function (c) {
+            return '<label class="pick-chip"><input type="checkbox" id="' + key + '-c-' + esc(c.id) + '" value="' + esc(c.id) + '"' + (ids.indexOf(c.id) >= 0 ? ' checked' : '') + '>' + avatar(c, 'sm') + '<span>' + esc(c.name) + '</span></label>';
+          }).join('') + '</div>'
+        : '<p class="hint" style="margin-bottom:10px">People you add in Contributors can be picked here with one tap.</p>') +
+      '<div class="others">' + names.map(otherChip).join('') + '</div>' +
+      '<div class="add-other"><input type="text" id="' + key + '-other" placeholder="Someone not in Contributors" aria-label="Add a name to ' + esc(label.toLowerCase()) + '" autocomplete="off">' +
+      '<button type="button" class="btn btn-small" data-add-other>Add</button></div></fieldset>';
+  }
+  function addOtherName(fs) {
+    if (!fs) return;
+    var input = fs.querySelector('.add-other input');
+    var n = input.value.trim();
+    if (!n) return;
+    var exists = Array.prototype.some.call(fs.querySelectorAll('.other-chip'), function (c) { return c.getAttribute('data-name') === n; });
+    if (!exists) fs.querySelector('.others').insertAdjacentHTML('beforeend', otherChip(n));
+    input.value = '';
+    input.focus();
+  }
+  function readPeople(form, key) {
+    var fs = form.querySelector('.people-field[data-key="' + key + '"]');
+    var ids = Array.prototype.map.call(fs.querySelectorAll('.pick input:checked'), function (i) { return i.value; });
+    var names = Array.prototype.map.call(fs.querySelectorAll('.other-chip'), function (c) { return c.getAttribute('data-name'); });
+    var pending = fs.querySelector('.add-other input').value.trim();
+    if (pending && names.indexOf(pending) < 0) names.push(pending);
+    return { ids: ids, names: names };
+  }
+  function partRow(p) {
+    p = p || { id: uid(), name: '', link: '', have: false };
+    var k = esc(p.id);
+    return '<div class="part-row" data-pid="' + k + '">' +
+      '<input type="text" class="pr-name" id="f-pn-' + k + '" aria-label="Part name" placeholder="Part name" value="' + esc(p.name) + '" autocomplete="off">' +
+      '<input type="text" class="pr-link" id="f-pl-' + k + '" aria-label="Link to buy it" placeholder="Link to buy it" inputmode="url" value="' + esc(p.link) + '" autocomplete="off">' +
+      '<label class="pr-have"><input type="checkbox" id="f-ph-' + k + '"' + (p.have ? ' checked' : '') + '> On hand</label>' +
+      '<button type="button" class="icon-btn" data-remove-part aria-label="Remove part">' + ICON.close + '</button></div>';
+  }
+  function addPartRow() {
+    var box = modal.querySelector('#f-parts');
+    if (!box) return;
+    box.insertAdjacentHTML('beforeend', partRow());
+    var names = box.querySelectorAll('.pr-name');
+    names[names.length - 1].focus();
+  }
+
+  /* ---------- Forms ---------- */
+  function carForm() {
+    var c = state.car;
+    var hasCover = c.coverPhotoId && find(state.photos, c.coverPhotoId);
+    openModal({
+      title: 'Car details',
+      body: fText('f-name', 'Build name', c.name, { placeholder: 'e.g. Project Sunburn' }) +
+        fText('f-model', 'Year, make and model', c.model, { placeholder: 'e.g. 1991 Mazda MX-5 Miata' }) +
+        fText('f-number', 'Car number', c.number, { placeholder: 'e.g. 27', maxlength: 4, hint: 'Shown on the roundel at the top of the page.' }) +
+        fArea('f-about', 'About this build', c.about, { placeholder: 'A sentence or two for the people you share this with.' }) +
+        (hasCover
+          ? '<label class="check"><input type="checkbox" id="f-nocover" name="f-nocover"> Remove the cover photo</label>'
+          : '<p class="hint">To add a cover photo, open any photo in Photography and choose Use as cover.</p>'),
+      onSubmit: function (form) {
+        var v = getter(form);
+        var nocover = form.elements['f-nocover'] && form.elements['f-nocover'].checked;
+        commit(function (s) {
+          s.car.name = v('f-name');
+          s.car.model = v('f-model');
+          s.car.number = v('f-number');
+          s.car.about = v('f-about');
+          if (nocover) s.car.coverPhotoId = '';
+        }, { immediate: true, msg: 'Car details saved' });
+      }
+    });
+  }
+  function installedForm(existing, fromMod) {
+    var src = existing || fromMod || {};
+    openModal({
+      title: existing ? 'Edit installed part' : fromMod ? 'Mark as installed' : 'Add installed part',
+      body: (fromMod ? '<p class="hint">This moves “' + esc(fromMod.name) + '” out of Future modifications and into Installed parts.</p>' : '') +
+        fText('f-name', 'Part name', src.name, { required: true, placeholder: 'e.g. Coilovers' }) +
+        fText('f-link', 'Purchase link', src.link, { placeholder: 'Paste the store page link', inputmode: 'url' }) +
+        '<div class="row2">' + fText('f-date', 'Date of install', existing ? existing.date : todayISO(), { type: 'date' }) +
+          fText('f-cost', 'Cost', costInput(src.cost), { placeholder: '$', inputmode: 'decimal' }) + '</div>' +
+        fChoice('f-rating', 'Rating', RATINGS, existing ? existing.rating : '', 'rating', true) +
+        fArea('f-notes', 'Notes', src.notes, { placeholder: 'Settings, torque specs, what changed' }),
+      submitLabel: fromMod ? 'Move to installed' : 'Save',
+      onSubmit: function (form) {
+        var v = getter(form);
+        var rec = { name: v('f-name'), link: v('f-link'), date: v('f-date'), cost: parseCost(v('f-cost')), rating: radioVal(form, 'f-rating'), notes: v('f-notes') };
+        commit(function (s) {
+          if (existing) {
+            var it = find(s.installed, existing.id);
+            if (it) { Object.assign(it, rec); delete it.sample; }
+          } else {
+            s.installed.push(Object.assign({ id: uid() }, rec));
+          }
+          if (fromMod) s.future = s.future.filter(function (f) { return f.id !== fromMod.id; });
+        }, { immediate: true, msg: existing ? 'Part updated' : fromMod ? 'Moved to installed parts' : 'Part added' });
+      },
+      onDelete: existing ? function () {
+        commit(function (s) { s.installed = s.installed.filter(function (i) { return i.id !== existing.id; }); }, { immediate: true, msg: 'Part deleted' });
+      } : null,
+      confirmDelete: existing ? { title: 'Delete this part?', text: '“' + existing.name + '” will be removed from Installed parts.' } : null
+    });
+  }
+  function futureForm(existing) {
+    var f = existing || {};
+    openModal({
+      title: existing ? 'Edit future mod' : 'Add future mod',
+      body: fText('f-name', 'Modification', f.name, { required: true, placeholder: 'e.g. Front big brake kit' }) +
+        fText('f-link', 'Purchase link', f.link, { placeholder: 'Paste the store page link', inputmode: 'url' }) +
+        fChoice('f-progress', 'Progress', PROGRESS, f.progress || 'theoretical', 'progress') +
+        fChoice('f-importance', 'Importance', IMPORTANCE, f.importance || 'medium', 'importance') +
+        fText('f-cost', 'Estimated cost', costInput(f.cost), { placeholder: '$', inputmode: 'decimal' }) +
+        fArea('f-notes', 'Notes', f.notes, { placeholder: 'Why it’s on the list, part numbers, alternatives' }),
+      onSubmit: function (form) {
+        var v = getter(form);
+        var rec = { name: v('f-name'), link: v('f-link'), progress: radioVal(form, 'f-progress') || 'theoretical', importance: radioVal(form, 'f-importance') || 'medium', cost: parseCost(v('f-cost')), notes: v('f-notes') };
+        commit(function (s) {
+          if (existing) {
+            var it = find(s.future, existing.id);
+            if (it) { Object.assign(it, rec); delete it.sample; }
+          } else {
+            s.future.push(Object.assign({ id: uid() }, rec));
+          }
+        }, { immediate: true, msg: existing ? 'Mod updated' : 'Mod added' });
+      },
+      onDelete: existing ? function () {
+        commit(function (s) { s.future = s.future.filter(function (x) { return x.id !== existing.id; }); }, { immediate: true, msg: 'Mod deleted' });
+      } : null,
+      confirmDelete: existing ? { title: 'Delete this mod?', text: '“' + existing.name + '” will be removed from Future modifications.' } : null
+    });
+  }
+  function mtForm(existing) {
+    var m = existing || {};
+    openModal({
+      title: existing ? 'Edit maintenance' : 'Add maintenance',
+      body: fText('f-title', 'Task', m.title, { required: true, placeholder: 'e.g. Oil and filter change' }) +
+        '<div class="row2">' + fText('f-deadline', 'Deadline', m.deadline, { type: 'date' }) + '<div></div></div>' +
+        fChoice('f-importance', 'Importance', IMPORTANCE, m.importance || 'medium', 'importance') +
+        '<fieldset class="field"><legend>Necessary parts <span class="opt">optional</span></legend>' +
+          '<div class="parts-editor" id="f-parts">' + (m.parts || []).map(partRow).join('') + '</div>' +
+          '<button type="button" class="btn btn-small" data-add-part>' + ICON.plus + 'Add a part</button></fieldset>' +
+        fArea('f-notes', 'Notes', m.notes),
+      onSubmit: function (form) {
+        var v = getter(form);
+        var parts = Array.prototype.map.call(form.querySelectorAll('.part-row'), function (row) {
+          return {
+            id: row.getAttribute('data-pid') || uid(),
+            name: row.querySelector('.pr-name').value.trim(),
+            link: row.querySelector('.pr-link').value.trim(),
+            have: row.querySelector('.pr-have input').checked
+          };
+        }).filter(function (p) { return p.name; });
+        var rec = { title: v('f-title'), deadline: v('f-deadline'), importance: radioVal(form, 'f-importance') || 'medium', parts: parts, notes: v('f-notes') };
+        commit(function (s) {
+          if (existing) {
+            var it = find(s.maintenance, existing.id);
+            if (it) { Object.assign(it, rec); delete it.sample; }
+          } else {
+            s.maintenance.push(Object.assign({ id: uid(), doneOn: '' }, rec));
+          }
+        }, { immediate: true, msg: existing ? 'Maintenance updated' : 'Maintenance added' });
+      },
+      onDelete: existing ? function () {
+        commit(function (s) { s.maintenance = s.maintenance.filter(function (x) { return x.id !== existing.id; }); }, { immediate: true, msg: 'Maintenance deleted' });
+      } : null,
+      confirmDelete: existing ? { title: 'Delete this task?', text: '“' + existing.title + '” will be removed from Maintenance.' } : null
+    });
+  }
+  function raceForm(existing) {
+    var r = existing || {};
+    openModal({
+      title: existing ? 'Edit race' : 'Add race',
+      body: fText('f-name', 'Event name', r.name, { required: true, placeholder: 'e.g. Autocross round 6' }) +
+        '<div class="row2">' + fText('f-location', 'Location', r.location, { placeholder: 'Track or venue' }) + fText('f-date', 'Date', r.date, { type: 'date' }) + '</div>' +
+        peopleField('racers', 'Racers', r.racerIds || [], r.racerNames || []) +
+        peopleField('attendees', 'Attendees', r.attendeeIds || [], r.attendeeNames || []) +
+        fArea('f-result', 'Results and notes', r.result, { placeholder: 'Finishing position, best lap, what to fix next time' }),
+      onSubmit: function (form) {
+        var v = getter(form);
+        var racers = readPeople(form, 'racers');
+        var att = readPeople(form, 'attendees');
+        var rec = { name: v('f-name'), location: v('f-location'), date: v('f-date'), racerIds: racers.ids, racerNames: racers.names, attendeeIds: att.ids, attendeeNames: att.names, result: v('f-result') };
+        commit(function (s) {
+          if (existing) {
+            var it = find(s.races, existing.id);
+            if (it) { Object.assign(it, rec); delete it.sample; }
+          } else {
+            s.races.push(Object.assign({ id: uid() }, rec));
+          }
+        }, { immediate: true, msg: existing ? 'Race updated' : 'Race added' });
+      },
+      onDelete: existing ? function () {
+        commit(function (s) { s.races = s.races.filter(function (x) { return x.id !== existing.id; }); }, { immediate: true, msg: 'Race deleted' });
+      } : null,
+      confirmDelete: existing ? { title: 'Delete this race?', text: '“' + existing.name + '” will be removed from Races.' } : null
+    });
+  }
+  function contributorForm(existing) {
+    var c = existing || {};
+    openModal({
+      title: existing ? 'Edit contributor' : 'Add contributor',
+      body: fText('f-name', 'Name', c.name, { required: true }) +
+        fText('f-role', 'Role', c.role, { placeholder: 'Driver, mechanic, photographer…', list: 'role-list' }) +
+        '<datalist id="role-list">' + ROLES.map(function (r) { return '<option value="' + r + '">'; }).join('') + '</datalist>' +
+        fText('f-contact', 'Contact', c.contact, { placeholder: 'Instagram, website, phone or email', hint: 'Anyone with the link to this page can see this.' }) +
+        fArea('f-notes', 'Notes', c.notes, { placeholder: 'What they help with' }),
+      onSubmit: function (form) {
+        var v = getter(form);
+        var rec = { name: v('f-name'), role: v('f-role'), contact: v('f-contact'), notes: v('f-notes') };
+        commit(function (s) {
+          if (existing) {
+            var it = find(s.contributors, existing.id);
+            if (it) { Object.assign(it, rec); delete it.sample; }
+          } else {
+            s.contributors.push(Object.assign({ id: uid() }, rec));
+          }
+        }, { immediate: true, msg: existing ? 'Contributor updated' : 'Contributor added' });
+      },
+      onDelete: existing ? function () {
+        commit(function (s) {
+          s.contributors = s.contributors.filter(function (x) { return x.id !== existing.id; });
+          s.races.forEach(function (r) {
+            r.racerIds = r.racerIds.filter(function (i) { return i !== existing.id; });
+            r.attendeeIds = r.attendeeIds.filter(function (i) { return i !== existing.id; });
+          });
+        }, { immediate: true, msg: 'Contributor removed' });
+      } : null,
+      confirmDelete: existing ? { title: 'Remove ' + existing.name + '?', text: 'They’ll be removed from Contributors and from any races they’re listed in.', ok: 'Remove' } : null
+    });
+  }
+  function removeSamples() {
+    confirmBox({ title: 'Remove all examples?', text: 'Every entry tagged Example will be deleted. Anything you added or edited stays.', ok: 'Remove examples' }).then(function (ok) {
+      if (!ok) return;
+      commit(function (s) {
+        ['installed', 'future', 'maintenance', 'races', 'contributors'].forEach(function (k) {
+          s[k] = s[k].filter(function (x) { return !x.sample; });
+        });
+        var keep = {};
+        s.contributors.forEach(function (c) { keep[c.id] = true; });
+        s.races.forEach(function (r) {
+          r.racerIds = r.racerIds.filter(function (i) { return keep[i]; });
+          r.attendeeIds = r.attendeeIds.filter(function (i) { return keep[i]; });
+        });
+      }, { immediate: true, msg: 'Examples removed' });
+    });
+  }
+
+  /* ---------- Photos ---------- */
+  async function prepareImage(file, maxSide, force) {
+    if (file.type === 'image/gif') return file;
+    var MAX = maxSide || 2400;
+    var url = null;
+    try {
+      url = URL.createObjectURL(file);
+      var img = await new Promise(function (res, rej) {
+        var im = new Image();
+        im.onload = function () { res(im); };
+        im.onerror = rej;
+        im.src = url;
+      });
+      var w = img.naturalWidth, h = img.naturalHeight;
+      if (!w || !h) return file;
+      var scale = Math.min(1, MAX / Math.max(w, h));
+      if (!force && scale === 1 && ACCEPTED.indexOf(file.type) >= 0 && file.size <= 3 * 1024 * 1024) return file;
+      var cw = Math.round(w * scale), ch = Math.round(h * scale);
+      var canvas = document.createElement('canvas');
+      canvas.width = cw; canvas.height = ch;
+      var ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, cw, ch);
+      ctx.drawImage(img, 0, 0, cw, ch);
+      var blob = await new Promise(function (res) { canvas.toBlob(res, 'image/jpeg', force ? 0.82 : 0.86); });
+      return blob && blob.size ? blob : file;
+    } catch (e) {
+      return file;
+    } finally {
+      if (url) URL.revokeObjectURL(url);
+    }
+  }
+  function guessType(name) {
+    var m = /\.([a-z0-9]+)$/i.exec(name || '');
+    var ext = m ? m[1].toLowerCase() : '';
+    return { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', webp: 'image/webp' }[ext];
+  }
+  function uploadError(failed) {
+    var f = failed[0];
+    var why = {
+      too_large: 'it’s over 20 MB',
+      unsupported_type: 'that file type isn’t supported (convert HEIC photos to JPEG first)',
+      quota_or_state: 'this page’s photo storage is full',
+      rate_limited: 'too many uploads at once, so try again in a minute',
+      decode: 'that photo couldn’t be read (convert HEIC photos to JPEG first)',
+      too_large_local: 'GIFs over 4 MB are too big to store in the file'
+    }[f.code] || 'the upload didn’t go through';
+    return failed.length === 1 ? 'Couldn’t upload ' + f.name + ': ' + why + '.' : failed.length + ' photos didn’t upload. ' + f.name + ': ' + why + '.';
+  }
+  async function handleFiles(fileList) {
+    var files = Array.prototype.filter.call(fileList || [], function (f) {
+      return /^image\//.test(f.type) || /\.(jpe?g|png|gif|webp|heic|heif)$/i.test(f.name);
+    });
+    if (!canUploadPhotos() || saving) return;
+    if (!files.length) { toast('Choose image files to upload.', 'err'); return; }
+    var added = [], failed = [];
+    for (var i = 0; i < files.length; i++) {
+      lock(files.length > 1 ? 'Adding photo ' + (i + 1) + ' of ' + files.length + '…' : 'Adding photo…');
+      try {
+        if (caps.mode === 'local') {
+          added.push({ id: uid(), src: await embedImage(files[i]), caption: '', added: todayISO() });
+        } else {
+          var blob = await prepareImage(files[i]);
+          var type = ACCEPTED.indexOf(blob.type) >= 0 ? null : guessType(files[i].name);
+          var res = await caps.assets.upload(blob, type ? { type: type } : undefined);
+          added.push({ id: res.id, caption: '', added: todayISO() });
+        }
+      } catch (e) {
+        failed.push({ name: files[i].name, code: e && e.code });
+        if (e && ['quota_or_state', 'rate_limited', 'not_granted', 'capability_disabled'].indexOf(e.code) >= 0) break;
+      }
+    }
+    unlock();
+    if (failed.length) toast(uploadError(failed), 'err');
+    if (added.length) {
+      commit(function (s) { s.photos = added.concat(s.photos); }, { immediate: true, msg: added.length === 1 ? 'Photo added' : added.length + ' photos added' });
+    }
+  }
+
+  /* ---------- Lightbox ---------- */
+  function openLightbox(i, play) {
+    if (!state.photos.length) return;
+    lb.open = true;
+    lb.index = Math.max(0, Math.min(i || 0, state.photos.length - 1));
+    document.body.classList.add('no-scroll');
+    renderLightbox();
+    if (play) startPlay();
+    var c = lbEl.querySelector('[data-action="lb-close"]');
+    if (c) c.focus();
+  }
+  function closeLightbox() {
+    stopPlay();
+    lb.open = false;
+    lbEl.hidden = true;
+    lbEl.innerHTML = '';
+    document.body.classList.remove('no-scroll');
+  }
+  function lbStep(d) {
+    var n = state.photos.length;
+    if (!n) return;
+    lb.index = (lb.index + d + n) % n;
+    renderLightbox();
+  }
+  function startPlay() {
+    stopPlay();
+    if (state.photos.length < 2) return;
+    lb.playing = true;
+    lb.timer = setInterval(function () { lbStep(1); }, 4000);
+    renderLightbox();
+  }
+  function stopPlay() { lb.playing = false; clearInterval(lb.timer); lb.timer = null; }
+  function renderLightbox() {
+    if (!lb.open) return;
+    var n = state.photos.length;
+    if (!n) { closeLightbox(); return; }
+    if (lb.index >= n) lb.index = n - 1;
+    var active = document.activeElement && lbEl.contains(document.activeElement) ? document.activeElement.getAttribute('data-action') : null;
+    var p = state.photos[lb.index];
+    var edit = isEditing();
+    var isCover = state.car.coverPhotoId === p.id;
+    lbEl.hidden = false;
+    lbEl.innerHTML = '<div class="lb" role="dialog" aria-modal="true" aria-label="Photo viewer">' +
+      '<div class="lb-top"><span class="lb-count">' + pad(lb.index + 1) + ' / ' + pad(n) + '</span><div class="lb-tools">' +
+        (n > 1 ? '<button type="button" class="lb-btn" data-action="lb-play">' + (lb.playing ? ICON.pause + 'Pause' : ICON.play + 'Slideshow') + '</button>' : '') +
+        '<button type="button" class="lb-btn" data-action="lb-close" aria-label="Close photo viewer">' + ICON.close + '</button></div></div>' +
+      '<figure class="lb-stage"><img src="' + photoSrc(p) + '" alt="' + esc(p.caption || 'Build photo ' + (lb.index + 1)) + '">' +
+        '<figcaption>' + (p.caption ? '<span>' + esc(p.caption) + '</span>' : '') + (isISO(p.added) ? '<span class="lb-date">Added ' + esc(fmtDate(p.added)) + '</span>' : '') + '</figcaption></figure>' +
+      (n > 1 ? '<button type="button" class="lb-nav prev" data-action="lb-prev" aria-label="Previous photo">' + ICON.prev + '</button><button type="button" class="lb-nav next" data-action="lb-next" aria-label="Next photo">' + ICON.next + '</button>' : '') +
+      (edit
+        ? '<div class="lb-owner"><button type="button" class="lb-btn" data-action="lb-caption">' + ICON.edit + (p.caption ? 'Edit caption' : 'Add caption') + '</button>' +
+          '<button type="button" class="lb-btn" data-action="lb-cover"' + (isCover ? ' disabled' : '') + '>' + (isCover ? 'This is the cover photo' : 'Use as cover') + '</button>' +
+          '<button type="button" class="lb-btn danger" data-action="lb-delete">' + ICON.trash + 'Delete</button></div>'
+        : '<div></div>') +
+    '</div>';
+    if (active) {
+      var b = lbEl.querySelector('[data-action="' + active + '"]');
+      if (b) b.focus();
+    }
+  }
+  function captionForm() {
+    var p = state.photos[lb.index];
+    if (!p) return;
+    stopPlay();
+    renderLightbox();
+    var id = p.id;
+    openModal({
+      title: 'Photo caption',
+      body: fText('f-caption', 'Caption', p.caption, { placeholder: 'What’s happening in this shot?' }),
+      onSubmit: function (form) {
+        var v = getter(form);
+        commit(function (s) { var ph = find(s.photos, id); if (ph) ph.caption = v('f-caption'); }, { immediate: true, msg: 'Caption saved' });
+      }
+    });
+  }
+  function deletePhoto() {
+    var p = state.photos[lb.index];
+    if (!p) return;
+    stopPlay();
+    var id = p.id;
+    confirmBox({ title: 'Delete this photo?', text: 'It will be removed from the page for everyone. This can’t be undone.' }).then(async function (ok) {
+      if (!ok) return;
+      if (caps.mode === 'hosted' && caps.assets && !p.src) { try { await caps.assets.delete(id); } catch (e) { /* still remove it from the page */ } }
+      commit(function (s) {
+        s.photos = s.photos.filter(function (x) { return x.id !== id; });
+        if (s.car.coverPhotoId === id) s.car.coverPhotoId = '';
+      }, { immediate: true, msg: 'Photo deleted' });
+      if (!state.photos.length) closeLightbox(); else renderLightbox();
+    });
+  }
+
+  /* ---------- Events ---------- */
+  var ACTIONS = {
+    'edit-car': function () { carForm(); },
+    'remove-samples': function () { removeSamples(); },
+    'add-installed': function () { installedForm(); },
+    'edit-installed': function (id) { var it = find(state.installed, id); if (it) installedForm(it); },
+    'set-rating': function (id, v) { setField('installed', id, 'rating', v); },
+    'filter': function (id, v) { ui.filter = v; render(); },
+    'add-race': function () { raceForm(); },
+    'edit-race': function (id) { var it = find(state.races, id); if (it) raceForm(it); },
+    'add-mt': function () { mtForm(); },
+    'edit-mt': function (id) { var it = find(state.maintenance, id); if (it) mtForm(it); },
+    'set-mt-importance': function (id, v) { setField('maintenance', id, 'importance', v); },
+    'toggle-part': function (id, v) {
+      commit(function (s) {
+        var m = find(s.maintenance, id);
+        var p = m && find(m.parts, v);
+        if (p) p.have = !p.have;
+      });
+    },
+    'done-mt': function (id) { commit(function (s) { var m = find(s.maintenance, id); if (m) m.doneOn = todayISO(); }, { msg: 'Marked done' }); },
+    'reopen-mt': function (id) { commit(function (s) { var m = find(s.maintenance, id); if (m) m.doneOn = ''; }, { msg: 'Reopened' }); },
+    'add-future': function () { futureForm(); },
+    'edit-future': function (id) { var it = find(state.future, id); if (it) futureForm(it); },
+    'set-progress': function (id, v) { setField('future', id, 'progress', v); },
+    'set-importance': function (id, v) { setField('future', id, 'importance', v); },
+    'install-mod': function (id) { var it = find(state.future, id); if (it) installedForm(null, it); },
+    'pick-photos': function () { var i = $('#photo-input'); if (i) i.click(); },
+    'open-photo': function (id, v) { openLightbox(parseInt(v, 10) || 0, false); },
+    'play': function () { openLightbox(0, true); },
+    'add-contributor': function () { contributorForm(); },
+    'edit-contributor': function (id) { var it = find(state.contributors, id); if (it) contributorForm(it); },
+    'toggle-preview': function () { ui.preview = !ui.preview; render(); if (lb.open) renderLightbox(); },
+    'retry-save': function () { retried = {}; save(); },
+    'save-file': function () { saveFile(); },
+    'lb-prev': function () { lbStep(-1); if (lb.playing) startPlay(); },
+    'lb-next': function () { lbStep(1); if (lb.playing) startPlay(); },
+    'lb-close': function () { closeLightbox(); },
+    'lb-play': function () { if (lb.playing) { stopPlay(); renderLightbox(); } else startPlay(); },
+    'lb-caption': function () { captionForm(); },
+    'lb-cover': function () {
+      var p = state.photos[lb.index];
+      if (p) commit(function (s) { s.car.coverPhotoId = p.id; }, { immediate: true, msg: 'Cover photo set' });
+    },
+    'lb-delete': function () { deletePhoto(); }
+  };
+  function setField(coll, id, field, value) {
+    var item = find(state[coll], id);
+    if (!item || item[field] === value) return;
+    commit(function (s) { var it = find(s[coll], id); if (it) it[field] = value; });
+  }
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest && e.target.closest('[data-action]');
+    if (!t || modal.contains(t) || confirmEl.contains(t)) return;
+    var fn = ACTIONS[t.getAttribute('data-action')];
+    if (!fn) return;
+    e.preventDefault();
+    fn(t.getAttribute('data-id'), t.getAttribute('data-value'), t);
+  });
+  app.addEventListener('change', function (e) {
+    if (e.target && e.target.id === 'photo-input') {
+      var files = Array.prototype.slice.call(e.target.files || []);
+      e.target.value = '';
+      handleFiles(files);
+    }
+  });
+  app.addEventListener('toggle', function (e) {
+    if (e.target && e.target.matches && e.target.matches('details.done')) ui.doneOpen = e.target.open;
+  }, true);
+  function dropZone(e) { return e.target && e.target.closest ? e.target.closest('#photos') : null; }
+  function hasFiles(e) { return e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') >= 0; }
+  document.addEventListener('dragover', function (e) {
+    var z = dropZone(e);
+    if (z && hasFiles(e) && canUploadPhotos()) { e.preventDefault(); z.classList.add('dragging'); }
+  });
+  document.addEventListener('dragleave', function (e) {
+    var z = dropZone(e);
+    if (z && !z.contains(e.relatedTarget)) z.classList.remove('dragging');
+  });
+  document.addEventListener('drop', function (e) {
+    var z = dropZone(e);
+    if (!z || !hasFiles(e)) return;
+    e.preventDefault();
+    z.classList.remove('dragging');
+    if (canUploadPhotos()) handleFiles(e.dataTransfer.files);
+  });
+  document.addEventListener('keydown', function (e) {
+    if (!lb.open || modal.open || confirmEl.open) return;
+    if (e.key === 'Escape') { e.preventDefault(); closeLightbox(); }
+    else if (e.key === 'ArrowRight') { lbStep(1); if (lb.playing) startPlay(); }
+    else if (e.key === 'ArrowLeft') { lbStep(-1); if (lb.playing) startPlay(); }
+  });
+  document.addEventListener('keydown', function (e) {
+    if (caps.mode === 'local' && (e.ctrlKey || e.metaKey) && !e.altKey && String(e.key).toLowerCase() === 's') {
+      e.preventDefault();
+      saveFile();
+    }
+  });
+  window.addEventListener('beforeunload', function (e) {
+    if (caps.mode === 'local' && localDirty) { e.preventDefault(); e.returnValue = ''; }
+  });
+  var touchX = null;
+  lbEl.addEventListener('touchstart', function (e) { touchX = e.touches[0].clientX; }, { passive: true });
+  lbEl.addEventListener('touchend', function (e) {
+    if (touchX == null) return;
+    var dx = e.changedTouches[0].clientX - touchX;
+    touchX = null;
+    if (Math.abs(dx) > 50) { lbStep(dx < 0 ? 1 : -1); if (lb.playing) startPlay(); }
+  });
+  document.addEventListener('error', function (e) {
+    var t = e.target;
+    if (t && t.tagName === 'IMG') t.classList.add('broken');
+  }, true);
+
+  /* ---------- Capabilities ---------- */
+  async function initCaps() {
+    var c = window.claude;
+    if ((!c || typeof c.use !== 'function') && location.protocol === 'file:') { startLocal(); return; }
+    if (!c || typeof c.use !== 'function') {
+      await new Promise(function (r) {
+        if (document.readyState === 'complete') setTimeout(r, 300);
+        else window.addEventListener('load', function () { setTimeout(r, 50); }, { once: true });
+      });
+      c = window.claude;
+      if (!c || typeof c.use !== 'function') { if (location.hash === '#edit') startLocal(); return; }
+    }
+    function use(name) {
+      try { return Promise.resolve(c.use(name)).catch(function () { return null; }); }
+      catch (e) { return Promise.resolve(null); }
+    }
+    var got = await Promise.all([use('artifact'), use('user')]);
+    caps.artifact = got[0];
+    caps.user = got[1];
+    var can = false;
+    if (caps.artifact && caps.user && typeof caps.user.canEdit === 'function') {
+      try { can = !!(await caps.user.canEdit()); } catch (e) { can = false; }
+    }
+    if (!can) return;
+    caps.assets = await use('assets');
+    caps.mode = 'hosted';
+    caps.canEdit = true;
+    render();
+    if (lb.open) renderLightbox();
+  }
+
+  /* ---------- Boot ---------- */
+  var stash = readStash();
+  if (stash) {
+    restoreY = typeof stash.y === 'number' ? stash.y : null;
+    if (stash.ui) {
+      if (typeof stash.ui.filter === 'string') ui.filter = stash.ui.filter;
+      ui.doneOpen = !!stash.ui.doneOpen;
+    }
+  }
+  render();
+  if (stash && stash.msg) toast(stash.msg);
+  if (stash && typeof stash.lb === 'number' && state.photos.length) openLightbox(stash.lb, false);
+  if (restoreY != null) {
+    setTimeout(function () { restoreY = null; }, 3000);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { if (restoreY != null) window.scrollTo(0, restoreY); });
+  } else if (location.hash) {
+    var target = document.getElementById(location.hash.slice(1));
+    if (target) setTimeout(function () { target.scrollIntoView(); }, 0);
+  }
+  initCaps();
+})();
+</script>
+</body>
+</html>
